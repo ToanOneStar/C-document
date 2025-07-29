@@ -39,7 +39,7 @@ Trong kiến trúc CPU, độ dài của địa chỉ quyết định số lư�
 
 MMU (Đơn vị quản lý bộ nhớ) được tích hợp trong CPU, dịch địa chỉ ảo sang vật lý. Khi CPU cần truy cập một địa chỉ bộ nhớ ảo, MMU sẽ thực hiện quá trình dịch.
 
-![page-table](../image/mmu.png)
+![page-table](../image/MMU.png)
 
 Để tăng tốc độ dịch địa chỉ, MMU duy trì một bộ đệm các ánh xạ được sử dụng gần đây từ bảng trang của hệ điều hành, được gọi là Bộ đệm tra cứu dịch (TLB - Translation Lookaside Buffer). Khi một địa chỉ ảo cần được dịch, TLB sẽ được tìm kiếm trước. Nếu tìm thấy một ánh xạ khớp trong TLB (gọi là TLB hit), quá trình dịch diễn ra rất nhanh. Tuy nhiên, nếu không có khớp (gọi là TLB miss), MMU, phần mềm hệ thống hoặc trình xử lý lỗi TLB của hệ điều hành sẽ tra cứu ánh xạ địa chỉ trong bảng trang chính Page Table (gọi là page walk) để tìm địa chỉ vật lý tương ứng.
 ## 2.3. Phân trang (Paging) và Khung trang (Page Frames)
