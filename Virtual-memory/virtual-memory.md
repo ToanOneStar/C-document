@@ -20,7 +20,7 @@ Hệ thống bộ nhớ ảo đầu tiên được triển khai trên Máy tính
 Trong hệ thống bộ nhớ ảo, chương trình dùng **địa chỉ ảo** (trừu tượng, liên tục) thay vì trực tiếp địa chỉ vật lý.
 **Địa chỉ vật lý** là địa chỉ thực tế trong RAM nơi dữ liệu lưu trữ.
 
-![vt-phys](../image/vt-physic.png)
+![vt-phys](../image/virtual2.png)
 
 OS, với phần cứng, ánh xạ địa chỉ ảo sang vật lý. Mỗi tiến trình có không gian địa chỉ ảo riêng, tạo ảo giác truy cập bộ nhớ liên tục và độc quyền, dù RAM vật lý có thể phân mảnh và chia sẻ.
 
@@ -33,3 +33,36 @@ MMU (Đơn vị quản lý bộ nhớ), tích hợp trong CPU, dịch địa ch�
 ![page-table](../image/pagetb.png)
 
 Để tăng tốc dịch, MMU dùng TLB (Translation Lookaside Buffer) lưu ánh xạ gần đây. TLB được tìm trước; nếu khớp (TLB hit), dịch nhanh. Nếu không (TLB miss), MMU hoặc OS tra cứu bảng trang chính (page walk) để tìm địa chỉ vật lý.
+
+## 2.3. Phân trang (Paging) và Khung trang (Page Frames)
+
+Phân trang chia bộ nhớ ảo thành "trang" (pages) và bộ nhớ vật lý thành "khung trang" (frames) có kích thước cố định, 4KB-16KB. Trang ảo được ánh xạ tới khung trang vật lý.
+
+![page-frame](../image/page-frame.png)
+
+Phân trang cho phép phân bổ không gian địa chỉ không liên tục trong RAM. Các phần chương trình có thể ở các vị trí vật lý khác nhau nhưng vẫn liên tục trong không gian ảo, giúp tránh phân mảnh bộ nhớ bên ngoài. 
+
+## 2.4. Bảng trang (Page Tables) và Các mục nhập bảng trang (PTEs)
+
+Bảng trang lưu ánh xạ địa chỉ ảo và vật lý. Mỗi tiến trình có bảng trang riêng, đảm bảo không gian bộ nhớ ảo liên tục và cô lập.
+
+Mỗi ánh xạ trong bảng trang được gọi là một mục nhập bảng trang (PTE - Page Table Entry). Một PTE chứa thông tin cần thiết để ánh xạ một trang ảo cụ thể tới một khung trang vật lý tương ứng. Ngoài số khung trang vật lý (PFN - Page Frame Number), PTE còn chứa nhiều thông tin phụ trợ quan trọng khác:
+- **Present/Valid Bit:** Chỉ ra liệu trang có đang nằm trong bộ nhớ vật lý (RAM) hay không. Nếu bit này không được đặt, nghĩa là trang không có trong RAM, việc truy cập trang sẽ kích hoạt một lỗi trang (page fault).
+- **Dirty/Modified Bit:** Cho biết liệu nội dung của trang đã được sửa đổi kể từ khi nó được tải vào RAM hay chưa. Nếu trang đã bị sửa đổi, nó được coi là "dirty" và phải được ghi lại vào đĩa (hoán đổi ra ngoài) trước khi khung trang của nó có thể được giải phóng hoặc tái sử dụng.
+- **Accessed Bit:** Cho biết liệu trang đã được truy cập (đọc hoặc ghi) gần đây hay không. Bit này được sử dụng bởi một số thuật toán thay thế trang (ví dụ: LRU) để theo dõi việc sử dụng trang.
+- **Read/Write (Protection) Bits:** Xác định các quyền truy cập (chỉ đọc, đọc/ghi, thực thi) đối với trang.9 Các bit bảo vệ này rất quan trọng để tăng cường bảo mật bộ nhớ, ngăn chặn các tiến trình thực hiện các thao tác không được phép.
+- **User/Supervisor Bit:** Xác định liệu trang có thể được truy cập bởi mã người dùng hay chỉ bởi kernel (chế độ đặc quyền).
+- **Global Bit:** Chỉ ra rằng trang này không được xóa khỏi TLB khi chuyển đổi ngữ cảnh, hữu ích cho các trang được chia sẻ bởi nhiều tiến trình hoặc các trang kernel.
+- **Process ID/Address Space ID (ASID):** Trong các hệ điều hành không phải là không gian địa chỉ đơn, thông tin này cần thiết để phân biệt các ánh xạ ảo của các tiến trình khác nhau, vì hai tiến trình có thể sử dụng cùng một địa chỉ ảo cho các mục đích khác nhau.
+
+# 3. Vai trò của Hệ điều hành trong Quản lý Bộ nhớ ảo
+
+OS quản lý bộ nhớ ảo, điều phối RAM vật lý và bộ nhớ thứ cấp để tạo ảo ảnh về không gian bộ nhớ lớn hơn.
+
+## 3.1. Cơ chế phân trang và Hoán đổi (Swapping)
+
+OS dùng phân trang để chuyển dữ liệu giữa RAM và đĩa, quản lý bộ nhớ hiệu quả. Hoán đổi (swapping) cho phép OS cấp phát bộ nhớ cho các tiến trình cần nhiều hơn RAM vật lý. Nó dùng không gian đĩa (tệp hoán đổi) như phần mở rộng của RAM. Khi RAM đầy, các trang không dùng sẽ được di chuyển đến tệp hoán đổi; khi cần, chúng được hoán đổi trở lại RAM (page swapping).
+
+![swap](../image/swap.png)
+
+Hoán đổi cho phép chạy chương trình lớn hơn RAM và cải thiện đa nhiệm. Tuy nhiên, truy cập đĩa chậm hơn RAM, dẫn đến đánh đổi: tăng bộ nhớ đi kèm giảm hiệu suất do I/O chậm. OS phải cân bằng việc giữ trang cần thiết trong RAM và hoán đổi trang ít dùng ra đĩa để tối ưu hiệu suất. Bộ nhớ ảo không "miễn phí", có chi phí hiệu suất tiềm ẩn, đòi hỏi thuật toán quản lý thông minh từ OS.
