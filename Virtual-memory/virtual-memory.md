@@ -156,7 +156,7 @@ Phân mảnh bộ nhớ là một vấn đề cố hữu trong quản lý bộ n
 
 Tuy nhiên, trong heap, các cuộc gọi malloc() và free() liên tục có thể tạo ra các "lỗ hổng" không gian trống giữa các khối bộ nhớ được cấp phát. Mặc dù hệ thống có thể tái sử dụng các địa chỉ ảo này từ danh sách các khối trống của trình quản lý heap, việc phân mảnh có thể khiến không có khối trống nào đủ lớn để đáp ứng các yêu cầu cấp phát lớn liên tục, buộc heap phải mở rộng bằng cách yêu cầu thêm bộ nhớ ảo từ hệ điều hành.
 
-## 2.7. Tương tác Nâng cao giữa C và Bộ nhớ ảo: Ánh xạ tệp vào bộ nhớ (mmap)
+## 2.7. Ánh xạ tệp vào bộ nhớ (mmap)
 
 Ngoài các cơ chế cấp phát bộ nhớ động tiêu chuẩn, C còn cung cấp các kỹ thuật nâng cao cho phép các chương trình tương tác trực tiếp với bộ nhớ ảo để xử lý tệp và bộ nhớ, nổi bật nhất là thông qua hàm ```mmap()```.
 
