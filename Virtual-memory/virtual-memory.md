@@ -262,7 +262,7 @@ Các thuật toán này cho thấy đánh đổi giữa thực tiễn và hiệu
 
 **Thrashing** là tình trạng hệ thống dành quá nhiều thời gian hoán đổi trang thay vì thực thi tiến trình. Thiếu RAM gây Page Faults thường xuyên, buộc OS hoán đổi liên tục. Hoạt động này tiêu tốn CPU và I/O, giảm hiệu suất, dẫn đến nhiều Page Faults hơn.
 
-![thrash](../image/thrashing.png)
+![thrash](../image/thrashingg.png)
 
 **Nguyên nhân thrashing:**
 1. **Đa chương trình cao:** Quá nhiều tiến trình chạy đồng thời, không đủ RAM cho các trang cần thiết.
