@@ -8,7 +8,7 @@ Trước khi cơ chế bộ nhớ ảo (Virtual Memory) ra đời, các chương
 
 Bộ nhớ vật lý, hay còn gọi là RAM, luôn có một dung lượng nhất định. Ví dụ, một máy tính có thể chỉ có 4GB, 8GB hoặc 16GB RAM. Khi một chương trình được khởi chạy, toàn bộ mã lệnh, dữ liệu, và các tài nguyên khác của nó phải được sao chép từ bộ nhớ phụ (như ổ cứng) vào RAM. Nếu kích thước của chương trình lớn hơn dung lượng RAM còn trống, chương trình sẽ không thể được nạp và do đó không thể chạy được.
 
-![ram](../image/ram2.png)
+![ram](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472382142-1db09866-f6f7-4804-a30d-36a7859411bb.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083053Z&X-Amz-Expires=300&X-Amz-Signature=bfaf66fa868c2cb02ebce618774c7bb53d6c54f065dce55de975cebc4fa5fc83&X-Amz-SignedHeaders=host)
 
 Vấn đề này đặc biệt nghiêm trọng đối với các ứng dụng lớn và phức tạp như phần mềm chỉnh sửa video, trò chơi đồ họa cao, cơ sở dữ liệu lớn, hoặc các môi trường phát triển tích hợp (IDE). Các ứng dụng này thường yêu cầu một lượng lớn bộ nhớ để hoạt động. Với mô hình cũ, người dùng sẽ liên tục gặp phải tình trạng "out of memory" (hết bộ nhớ), hoặc không thể chạy được các chương trình này ngay từ đầu.
 
