@@ -107,7 +107,7 @@ Sự ra đời của Virtual Memory đã giải quyết vấn đề này bằng 
 Trong một hệ thống máy tính sử dụng bộ nhớ ảo, các chương trình không trực tiếp sử dụng địa chỉ bộ nhớ vật lý. Thay vào đó, chúng hoạt động với các địa chỉ ảo. **Địa chỉ ảo** là các địa chỉ được tạo ra và sử dụng bởi chương trình, cung cấp một cái nhìn trừu tượng và liên tục về bộ nhớ. Ngược lại, **địa chỉ vật lý** là các địa chỉ thực tế trong bộ nhớ RAM (bộ nhớ truy cập ngẫu nhiên) của máy tính, nơi dữ liệu thực sự được lưu trữ.
 
 
-![vt-phys](../image/virtual2.png)
+![vt-phys](../image/vt-ps.png)
 
 Hệ điều hành với sự hỗ trợ của phần cứng chuyên dụng, ánh xạ địa chỉ ảo sang vật lý. Mỗi tiến trình có không gian địa chỉ ảo riêng, tạo ảo giác truy cập bộ nhớ liên tục và độc quyền, dù RAM vật lý có thể phân mảnh và chia sẻ.
 
