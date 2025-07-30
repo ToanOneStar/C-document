@@ -106,7 +106,7 @@ Trước khi cơ chế bộ nhớ ảo (Virtual Memory) được ra đời, vi�
 
 - **Bộ nhớ chia sẻ tự do**: Khi một chương trình được nạp vào RAM, nó được cấp phát một vùng địa chỉ vật lý. Tuy nhiên, không có cơ chế phần cứng hoặc phần mềm nào để ngăn chặn chương trình đó truy cập vào các địa chỉ vật lý nằm ngoài vùng của nó, tức là các vùng nhớ thuộc về chương trình khác hoặc thậm chí là của hệ điều hành.
 
-![ram-xp](../image/ram-xp.png)
+![ram-xp](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472383289-43dcef07-c376-4683-a408-606657f14da1.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083311Z&X-Amz-Expires=300&X-Amz-Signature=3610783246a656fa753825e7d227024312e660f4523b77b8e9210e212d7cc7f8&X-Amz-SignedHeaders=host)
 
 - Trong sơ đồ này, nếu Chương trình B muốn truy cập vào vùng nhớ của Chương trình A hoặc OS, nó có thể làm được vì không có hàng rào bảo vệ.
 
@@ -149,7 +149,7 @@ Phân mảnh ngoài xảy ra khi có đủ tổng dung lượng bộ nhớ trố
 
 Giả sử chúng ta có một vùng bộ nhớ vật lý được chia thành các khối.
 
-![des](../image/dess.png)
+![des](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472383658-f5f04fd5-ec40-4f35-8e4a-76fdd5a91ece.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083353Z&X-Amz-Expires=300&X-Amz-Signature=5a663299b50e45378575d7a0df10c09a68af187fc5a4d0a12309ee5181e8f926&X-Amz-SignedHeaders=host)
 
 Tại thời điểm này, tổng bộ nhớ trống là 30KB+50KB=80KB.
 Tuy nhiên, nếu một Chương trình C (60KB) cần được nạp, nó không thể được đặt vào vì không có một khối trống liền kề nào đủ 60KB. Mặc dù tổng dung lượng trống là 80KB, nhưng nó đã bị phân mảnh thành hai khối 30KB và 50KB. Đây chính là phân mảnh ngoài.
@@ -159,7 +159,7 @@ Phân mảnh trong xảy ra khi bộ nhớ được cấp phát cho một chươ
 
 Giả sử hệ thống cấp phát bộ nhớ theo các khối có kích thước 16KB. Chương trình X cần 10KB bộ nhớ.
 
-![internal-frag](../image/langphi.png)
+![internal-frag](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472383948-18104e2b-0e5b-41ef-b712-2296ddd668db.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083429Z&X-Amz-Expires=300&X-Amz-Signature=4be7135a06460fc9d8694c8bca56e891cf6b810134f9e4a328b7d7e11fdb2e69&X-Amz-SignedHeaders=host)
 
 Tác động của phân mảnh bộ nhớ
 1. **Lãng phí bộ nhớ:** Đây là tác động rõ ràng nhất. Các khối bộ nhớ trống không thể sử dụng được, làm giảm hiệu quả sử dụng RAM.
@@ -180,7 +180,7 @@ Với sự ra đời của Virtual Memory, vấn đề phân mảnh bộ nhớ v
 Trong một hệ thống máy tính sử dụng bộ nhớ ảo, các chương trình không trực tiếp sử dụng địa chỉ bộ nhớ vật lý. Thay vào đó, chúng hoạt động với các địa chỉ ảo. **Địa chỉ ảo** là các địa chỉ được tạo ra và sử dụng bởi chương trình, cung cấp một cái nhìn trừu tượng và liên tục về bộ nhớ. Ngược lại, **địa chỉ vật lý** là các địa chỉ thực tế trong bộ nhớ RAM (bộ nhớ truy cập ngẫu nhiên) của máy tính, nơi dữ liệu thực sự được lưu trữ.
 
 
-![vt-phys](../image/vt-ps.png)
+![vt-phys](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384178-382759a3-7b5c-4cee-be76-f68116bade7f.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083508Z&X-Amz-Expires=300&X-Amz-Signature=4593e4ca4b4ff58a56ee828ea0847728c09a30501498a0f5399502a2f895ded1&X-Amz-SignedHeaders=host)
 
 Hệ điều hành với sự hỗ trợ của phần cứng chuyên dụng, ánh xạ địa chỉ ảo sang vật lý. Mỗi tiến trình có không gian địa chỉ ảo riêng, tạo ảo giác truy cập bộ nhớ liên tục và độc quyền, dù RAM vật lý có thể phân mảnh và chia sẻ.
 
@@ -195,7 +195,7 @@ Trong kiến trúc CPU, độ dài của địa chỉ quyết định số lư�
 
 MMU (Đơn vị quản lý bộ nhớ) được tích hợp trong CPU, dịch địa chỉ ảo sang vật lý. Khi CPU cần truy cập một địa chỉ bộ nhớ ảo, MMU sẽ thực hiện quá trình dịch.
 
-![page-table](../image/MMU.png)
+![page-table](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384424-c99f58ae-5fda-4a7a-bf62-e34c1d3387c3.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083542Z&X-Amz-Expires=300&X-Amz-Signature=26ea9c31d884c295d8139ea0b0d75b1273ad85f035820547714cda58ed45f426&X-Amz-SignedHeaders=host)
 
 Để tăng tốc độ dịch địa chỉ, MMU duy trì một bộ đệm các ánh xạ được sử dụng gần đây từ bảng trang của hệ điều hành, được gọi là Bộ đệm tra cứu dịch (TLB - Translation Lookaside Buffer). Khi một địa chỉ ảo cần được dịch, TLB sẽ được tìm kiếm trước. Nếu tìm thấy một ánh xạ khớp trong TLB (gọi là TLB hit), quá trình dịch diễn ra rất nhanh. Tuy nhiên, nếu không có khớp (gọi là TLB miss), MMU, phần mềm hệ thống hoặc trình xử lý lỗi TLB của hệ điều hành sẽ tra cứu ánh xạ địa chỉ trong bảng trang chính Page Table (gọi là page walk) để tìm địa chỉ vật lý tương ứng.
 ## 2.3. Phân trang (Paging) và Khung trang (Page Frames)
@@ -227,7 +227,7 @@ OS quản lý bộ nhớ ảo, điều phối RAM vật lý và bộ nhớ thứ
 
 OS dùng phân trang để chuyển dữ liệu giữa RAM và đĩa, quản lý bộ nhớ hiệu quả. Hoán đổi (swapping) cho phép OS cấp phát bộ nhớ cho các tiến trình cần nhiều hơn RAM vật lý. Nó dùng không gian đĩa (tệp hoán đổi) như phần mở rộng của RAM. Khi RAM đầy, các trang không dùng sẽ được di chuyển đến tệp hoán đổi; khi cần, chúng được hoán đổi trở lại RAM (page swapping).
 
-![swap](../image/swapp.png)
+![swap](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384672-bd2f79f1-e45b-4ba2-b37b-541ceb83bf05.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083618Z&X-Amz-Expires=300&X-Amz-Signature=c369e54af27c967c8f9d839da731ba1f1d674520dfa879f4eed327fd9367e1eb&X-Amz-SignedHeaders=host)
 
 Hoán đổi cho phép chạy chương trình lớn hơn RAM và cải thiện đa nhiệm. Tuy nhiên, truy cập đĩa chậm hơn RAM, dẫn đến đánh đổi: tăng bộ nhớ đi kèm giảm hiệu suất do I/O chậm. OS phải cân bằng việc giữ trang cần thiết trong RAM và hoán đổi trang ít dùng ra đĩa để tối ưu hiệu suất. Bộ nhớ ảo không "miễn phí", có chi phí hiệu suất tiềm ẩn, đòi hỏi thuật toán quản lý thông minh từ OS.
 
@@ -262,7 +262,7 @@ Các thuật toán này cho thấy đánh đổi giữa thực tiễn và hiệu
 
 **Thrashing** là tình trạng hệ thống dành quá nhiều thời gian hoán đổi trang thay vì thực thi tiến trình. Thiếu RAM gây Page Faults thường xuyên, buộc OS hoán đổi liên tục. Hoạt động này tiêu tốn CPU và I/O, giảm hiệu suất, dẫn đến nhiều Page Faults hơn.
 
-![thrash](../image/thrashingg.png)
+![thrash](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384939-f9f899e2-bf97-4de5-9727-5b6fc24ebd0e.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083702Z&X-Amz-Expires=300&X-Amz-Signature=f16f89d0e16a0d54862f33340028a5f802d8d5230cfa61f0938b8c9d3551a0f6&X-Amz-SignedHeaders=host)
 
 **Nguyên nhân thrashing:**
 1. **Đa chương trình cao:** Quá nhiều tiến trình chạy đồng thời, không đủ RAM cho các trang cần thiết.
@@ -292,14 +292,14 @@ Thrashing cho thấy giới hạn của bộ nhớ ảo khi thiếu tài nguyên
 
 Chương trình C được tổ chức thành các phân đoạn (segments) riêng biệt trong không gian địa chỉ ảo của tiến trình, mỗi phân đoạn có mục đích cụ thể.
 
-![memory-layout](../image/memory-layoutt.png)
+![memory-layout](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472385236-320f9839-19d1-46ae-8f81-b56281588454.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083737Z&X-Amz-Expires=300&X-Amz-Signature=1473456212e82ffd24293ac43b4c7b31785bdd637103b775084131d7dfa2fd53&X-Amz-SignedHeaders=host)
 
 1. Text Segment (Code Segment): Lưu mã thực thi đã biên dịch, thường chỉ đọc để bảo mật.
 2. Data Segment: Lưu biến toàn cục và tĩnh đã khởi tạo. Chia thành:
 - Initialized Data Segment (khởi tạo rõ ràng)
 - Uninitialized Data Segment (BSS) (không khởi tạo, tự động bằng 0).
-3. Heap Segment: Vùng cấp phát bộ nhớ động, bắt đầu từ cuối BSS và phát triển lên. Quản lý bởi malloc(), realloc(), free().
-4. Stack Segment: Vùng cho biến cục bộ và quản lý lời gọi hàm. Mỗi lời gọi tạo khung ngăn xếp. Ngăn xếp phát triển ngược chiều với heap (từ địa chỉ cao xuống thấp). Heap và stack phát triển về phía nhau; khi gặp nhau, chương trình hết bộ nhớ ảo.
+1. Heap Segment: Vùng cấp phát bộ nhớ động, bắt đầu từ cuối BSS và phát triển lên. Quản lý bởi malloc(), realloc(), free().
+2. Stack Segment: Vùng cho biến cục bộ và quản lý lời gọi hàm. Mỗi lời gọi tạo khung ngăn xếp. Ngăn xếp phát triển ngược chiều với heap (từ địa chỉ cao xuống thấp). Heap và stack phát triển về phía nhau; khi gặp nhau, chương trình hết bộ nhớ ảo.
 
 Cấu trúc bộ nhớ chương trình C là các phân đoạn trong không gian địa chỉ ảo, không phải vật lý. Heap và Stack phát triển ngược chiều; khi gặp nhau sẽ gây ra lỗi Stack overflow hay Out of memory bản chất là hết bộ nhớ ảo khả dụng.
 
