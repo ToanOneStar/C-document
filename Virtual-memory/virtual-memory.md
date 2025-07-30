@@ -149,7 +149,7 @@ Phân mảnh ngoài xảy ra khi có đủ tổng dung lượng bộ nhớ trố
 
 Giả sử chúng ta có một vùng bộ nhớ vật lý được chia thành các khối.
 
-![des](../image/virtual-memory.drawio.png)
+![des](../image/dess.png)
 
 # 2. Khái niệm và chức năng các thành phần trong bộ nhớ ảo
 
