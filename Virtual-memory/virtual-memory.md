@@ -151,6 +151,28 @@ Giả sử chúng ta có một vùng bộ nhớ vật lý được chia thành c
 
 ![des](../image/dess.png)
 
+Tại thời điểm này, tổng bộ nhớ trống là 30KB+50KB=80KB.
+Tuy nhiên, nếu một Chương trình C (60KB) cần được nạp, nó không thể được đặt vào vì không có một khối trống liền kề nào đủ 60KB. Mặc dù tổng dung lượng trống là 80KB, nhưng nó đã bị phân mảnh thành hai khối 30KB và 50KB. Đây chính là phân mảnh ngoài.
+
+### 1.3.2. Phân mảnh trong (Internal Fragmentation)
+Phân mảnh trong xảy ra khi bộ nhớ được cấp phát cho một chương trình hoặc tiến trình lớn hơn một chút so với kích thước thực tế mà nó cần, và phần bộ nhớ thừa không được sử dụng. Điều này thường xảy ra khi hệ thống cấp phát bộ nhớ theo các khối có kích thước cố định (ví dụ: các trang - pages, hoặc các phân đoạn - segments).
+
+Giả sử hệ thống cấp phát bộ nhớ theo các khối có kích thước 16KB. Chương trình X cần 10KB bộ nhớ.
+
+![internal-frag](../image/langphi.png)
+
+Tác động của phân mảnh bộ nhớ
+1. **Lãng phí bộ nhớ:** Đây là tác động rõ ràng nhất. Các khối bộ nhớ trống không thể sử dụng được, làm giảm hiệu quả sử dụng RAM.
+
+2. **Giảm hiệu suất hệ thống:** Hệ điều hành phải tốn thời gian hơn để tìm kiếm các khối bộ nhớ trống phù hợp, hoặc phải thực hiện các thao tác "gom rác" (garbage collection) hay "nén" (compaction) bộ nhớ (di chuyển các khối dữ liệu để tạo ra các khối trống lớn hơn), vốn rất tốn tài nguyên.
+
+3. **Không thể chạy các chương trình lớn:** Dù tổng dung lượng trống vẫn còn, nhưng nếu không có một khối liền kề đủ lớn, các chương trình yêu cầu nhiều bộ nhớ sẽ không thể khởi chạy.
+
+4. **Hệ thống bị "treo" (crash):** Trong một số trường hợp cực đoan, nếu không thể cấp phát bộ nhớ cho các tác vụ quan trọng, hệ thống có thể bị treo.
+
+Trước khi có Virtual Memory, các phương pháp như nén bộ nhớ (di chuyển các chương trình để gom các khối trống lại) được sử dụng, nhưng rất tốn kém về thời gian.
+
+Với sự ra đời của Virtual Memory, vấn đề phân mảnh bộ nhớ vật lý được giảm thiểu đáng kể. Virtual Memory cho phép mỗi chương trình nhìn thấy một không gian bộ nhớ logic liên tục, độc lập với cách bộ nhớ vật lý thực sự bị phân mảnh. Hệ điều hành sẽ quản lý việc ánh xạ từ địa chỉ ảo sang địa chỉ vật lý, và có thể tải các phần của chương trình vào các vùng nhớ vật lý không liền kề. Điều này giúp sử dụng hiệu quả hơn các khối bộ nhớ vật lý nhỏ lẻ và giảm bớt gánh nặng của phân mảnh bộ nhớ.
 # 2. Khái niệm và chức năng các thành phần trong bộ nhớ ảo
 
 ## 2.1. Địa chỉ ảo và Địa chỉ vật lý
@@ -205,7 +227,7 @@ OS quản lý bộ nhớ ảo, điều phối RAM vật lý và bộ nhớ thứ
 
 OS dùng phân trang để chuyển dữ liệu giữa RAM và đĩa, quản lý bộ nhớ hiệu quả. Hoán đổi (swapping) cho phép OS cấp phát bộ nhớ cho các tiến trình cần nhiều hơn RAM vật lý. Nó dùng không gian đĩa (tệp hoán đổi) như phần mở rộng của RAM. Khi RAM đầy, các trang không dùng sẽ được di chuyển đến tệp hoán đổi; khi cần, chúng được hoán đổi trở lại RAM (page swapping).
 
-![swap](../image/swap.png)
+![swap](../image/swapp.png)
 
 Hoán đổi cho phép chạy chương trình lớn hơn RAM và cải thiện đa nhiệm. Tuy nhiên, truy cập đĩa chậm hơn RAM, dẫn đến đánh đổi: tăng bộ nhớ đi kèm giảm hiệu suất do I/O chậm. OS phải cân bằng việc giữ trang cần thiết trong RAM và hoán đổi trang ít dùng ra đĩa để tối ưu hiệu suất. Bộ nhớ ảo không "miễn phí", có chi phí hiệu suất tiềm ẩn, đòi hỏi thuật toán quản lý thông minh từ OS.
 
