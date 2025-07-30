@@ -174,7 +174,9 @@ Trước khi có Virtual Memory, các phương pháp như nén bộ nhớ (di ch
 
 Với sự ra đời của Virtual Memory, vấn đề phân mảnh bộ nhớ vật lý được giảm thiểu đáng kể. Virtual Memory cho phép mỗi chương trình nhìn thấy một không gian bộ nhớ logic liên tục, độc lập với cách bộ nhớ vật lý thực sự bị phân mảnh. Hệ điều hành sẽ quản lý việc ánh xạ từ địa chỉ ảo sang địa chỉ vật lý, và có thể tải các phần của chương trình vào các vùng nhớ vật lý không liền kề. Điều này giúp sử dụng hiệu quả hơn các khối bộ nhớ vật lý nhỏ lẻ và giảm bớt gánh nặng của phân mảnh bộ nhớ.
 # 2. Khái niệm và chức năng các thành phần trong bộ nhớ ảo
+Bộ nhớ ảo là kỹ thuật quản lý bộ nhớ nền tảng, tạo ảo ảnh về một bộ nhớ rất lớn cho người dùng và ứng dụng. Nó kết hợp RAM với bộ nhớ trên ổ đĩa (SSD/HDD) để tạo không gian địa chỉ liên tục. Hệ điều hành (OS), với sự hỗ trợ của phần cứng và phần mềm, ánh xạ địa chỉ ảo (chương trình sử dụng) thành địa chỉ vật lý (RAM thực tế).
 
+Mục đích chính của bộ nhớ ảo không chỉ mở rộng dung lượng bộ nhớ vật lý bằng cách tận dụng không gian đĩa. Nó còn cung cấp bảo vệ bộ nhớ bằng cách dịch địa chỉ ảo sang vật lý, ngăn chặn truy cập trái phép. Điều này cho phép chạy các chương trình lớn hơn RAM, giải phóng ứng dụng khỏi quản lý bộ nhớ chia sẻ, tăng cường bảo mật qua cô lập bộ nhớ, và cho phép nhà phát triển sử dụng nhiều bộ nhớ hơn mức vật lý có sẵn.
 ## 2.1. Địa chỉ ảo và Địa chỉ vật lý
 
 Trong một hệ thống máy tính sử dụng bộ nhớ ảo, các chương trình không trực tiếp sử dụng địa chỉ bộ nhớ vật lý. Thay vào đó, chúng hoạt động với các địa chỉ ảo. **Địa chỉ ảo** là các địa chỉ được tạo ra và sử dụng bởi chương trình, cung cấp một cái nhìn trừu tượng và liên tục về bộ nhớ. Ngược lại, **địa chỉ vật lý** là các địa chỉ thực tế trong bộ nhớ RAM (bộ nhớ truy cập ngẫu nhiên) của máy tính, nơi dữ liệu thực sự được lưu trữ.
