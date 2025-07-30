@@ -98,8 +98,59 @@ Khi chạy chương trình (mô hình cũ - không có Virtual Memory):
 
 Sự ra đời của Virtual Memory đã giải quyết vấn đề này bằng cách chỉ nạp những phần của chương trình đang thực sự được sử dụng vào RAM, và các phần còn lại sẽ được lưu trữ trên ổ cứng (trong không gian trao đổi - swap space/paging file). Khi một phần không có trong RAM được yêu cầu, hệ điều hành sẽ tải nó vào (gọi là "demand paging" hoặc "swapping in"). Điều này giúp tối ưu hóa việc sử dụng RAM và cho phép chạy các chương trình lớn hơn cũng như nhiều chương trình hơn cùng lúc.
 ## 1.2. Thiếu tính bảo vệ bộ nhớ (memory protection)
+Trước khi cơ chế bộ nhớ ảo (Virtual Memory) được ra đời, việc thiếu tính bảo vệ bộ nhớ là một vấn đề cực kỳ nghiêm trọng. Nó cho phép một chương trình (tiến trình) có thể truy cập, đọc, hoặc thậm chí ghi đè lên vùng nhớ của chương trình khác. Điều này dẫn đến những hậu quả khôn lường về cả độ ổn định của hệ thống lẫn bảo mật.
 
+Để hiểu rõ hơn, hãy tưởng tượng hệ thống máy tính của bạn như một tòa nhà chung cư, nơi mỗi căn hộ là một chương trình đang chạy.
+
+1. Môi trường không được bảo vệ (trước Virtual Memory): Trong mô hình cũ, không có "bức tường" hoặc "khóa cửa" giữa các "căn hộ" (chương trình). Tất cả các chương trình đều truy cập trực tiếp vào cùng một không gian bộ nhớ vật lý.
+
+- **Bộ nhớ chia sẻ tự do**: Khi một chương trình được nạp vào RAM, nó được cấp phát một vùng địa chỉ vật lý. Tuy nhiên, không có cơ chế phần cứng hoặc phần mềm nào để ngăn chặn chương trình đó truy cập vào các địa chỉ vật lý nằm ngoài vùng của nó, tức là các vùng nhớ thuộc về chương trình khác hoặc thậm chí là của hệ điều hành.
+
+![ram-xp](../image/ram-xp.png)
+
+- Trong sơ đồ này, nếu Chương trình B muốn truy cập vào vùng nhớ của Chương trình A hoặc OS, nó có thể làm được vì không có hàng rào bảo vệ.
+
+Việc thiếu bảo vệ bộ nhớ dẫn đến các vấn đề chính sau:
+
+1. Lỗi chương trình (Program Crashes):
+
+- **Ghi đè dữ liệu**: Nếu Chương trình A vô tình (do lỗi lập trình) hoặc cố ý ghi dữ liệu vào vùng nhớ của Chương trình B, dữ liệu của B sẽ bị hỏng. Khi Chương trình B cố gắng sử dụng dữ liệu bị hỏng đó, nó có thể gặp lỗi và bị sập (crash), kéo theo việc mất dữ liệu hoặc làm gián đoạn công việc của người dùng.
+
+- **Thực thi mã lệnh sai**: Nghiêm trọng hơn, nếu một chương trình ghi đè lên phần mã lệnh của chương trình khác, khi chương trình đó cố gắng thực thi mã lệnh đã bị thay đổi, kết quả có thể không đoán trước được, dẫn đến treo máy hoặc sập hệ thống.
+
+- **Ví dụ thực tế**: Tưởng tượng một ứng dụng duyệt web bị lỗi và ghi đè vào dữ liệu của trình soạn thảo văn bản bạn đang dùng, khiến tài liệu của bạn bị hỏng hoặc trình soạn thảo bị đóng đột ngột mà không kịp lưu.
+
+2. Nguy hiểm bảo mật (Security Vulnerabilities):
+
+- **Truy cập thông tin nhạy cảm**: Một chương trình độc hại có thể lợi dụng việc thiếu bảo vệ bộ nhớ để đọc các thông tin nhạy cảm từ vùng nhớ của các chương trình khác. Ví dụ, nó có thể đọc mật khẩu từ trình quản lý mật khẩu, số thẻ tín dụng từ ứng dụng thanh toán, hoặc dữ liệu cá nhân từ các ứng dụng ngân hàng đang chạy.
+
+- **Leo thang đặc quyền (Privilege Escalation)**: Kẻ tấn công có thể chèn mã độc vào vùng nhớ của hệ điều hành hoặc các tiến trình có quyền cao hơn, sau đó buộc các tiến trình này thực thi mã độc đó. Điều này cho phép kẻ tấn công chiếm quyền kiểm soát toàn bộ hệ thống, cài đặt phần mềm độc hại, đánh cắp dữ liệu, hoặc thực hiện các hành vi phá hoại khác.
+
+- **Ví dụ thực tế**: Một phần mềm độc hại (malware) có thể tìm kiếm và sao chép thông tin đăng nhập từ vùng nhớ của trình duyệt web hoặc ứng dụng email đang chạy trên cùng một máy tính.
+
+Việc thiếu bảo vệ bộ nhớ cũng làm cho quá trình phát triển phần mềm trở nên vô cùng khó khăn. Khi một chương trình gặp lỗi, rất khó để xác định nguyên nhân vì lỗi đó có thể không phải do chính chương trình đó gây ra mà do một chương trình khác đã ghi đè lên bộ nhớ của nó. Điều này làm phức tạp hóa quá trình gỡ lỗi và tăng thời gian phát triển.
+
+Cơ chế Virtual Memory đã giải quyết triệt để vấn đề này bằng cách giới thiệu khái niệm không gian địa chỉ ảo (virtual address space) riêng biệt cho mỗi tiến trình.
+
+- Mỗi chương trình được cung cấp một không gian địa chỉ ảo độc lập và liền kề, bắt đầu từ địa chỉ 0. Chương trình chỉ "nhìn thấy" không gian địa chỉ ảo của riêng nó.
+
+- Bộ quản lý bộ nhớ (MMU - Memory Management Unit) trong phần cứng sẽ chịu trách nhiệm ánh xạ (mapping) các địa chỉ ảo này sang các địa chỉ vật lý tương ứng trong RAM.
+
+- Nếu một chương trình cố gắng truy cập vào một địa chỉ ảo không thuộc về không gian của nó hoặc không được phép (ví dụ: một vùng nhớ chỉ để đọc mà lại cố gắng ghi), MMU sẽ phát hiện ra và tạo ra một lỗi (gọi là page fault hoặc segmentation fault), sau đó dừng ngay lập tức tiến trình gây lỗi.
+
+Điều này đảm bảo rằng mỗi chương trình hoạt động trong "hộp cát" (sandbox) của riêng nó, được bảo vệ khỏi sự can thiệp của các chương trình khác, từ đó nâng cao đáng kể tính ổn định và bảo mật của hệ thống.
 ## 1.3. Vấn đề về phân mảnh bộ nhớ
+Phân mảnh bộ nhớ (Memory Fragmentation) là một hiện tượng phổ biến và gây đau đầu trong quản lý bộ nhớ, đặc biệt là trước khi các kỹ thuật quản lý bộ nhớ tiên tiến như bộ nhớ ảo ra đời rộng rãi. Nó xảy ra khi bộ nhớ vật lý bị chia cắt thành nhiều khối nhỏ, không liền kề, khiến cho dù tổng dung lượng bộ nhớ trống vẫn còn, nhưng lại không đủ một khối lớn liên tục để chứa một chương trình hoặc dữ liệu cần kích thước lớn.
+
+Có hai loại phân mảnh bộ nhớ chính là phân mảnh ngoài và phân mảnh nội bộ.
+
+### 1.3.1. Phân mảnh ngoài (External Fragmentation)
+Phân mảnh ngoài xảy ra khi có đủ tổng dung lượng bộ nhớ trống để đáp ứng yêu cầu, nhưng các khối bộ nhớ trống này lại nằm rải rác, không liền kề nhau. Tưởng tượng bạn có một chiếc tủ sách với nhiều ngăn trống, nhưng không có ngăn nào đủ rộng để chứa một cuốn sách lớn mà bạn muốn đặt vào.
+
+Giả sử chúng ta có một vùng bộ nhớ vật lý được chia thành các khối.
+
+![des](../image/virtual-memory.drawio.png)
+
 # 2. Khái niệm và chức năng các thành phần trong bộ nhớ ảo
 
 ## 2.1. Địa chỉ ảo và Địa chỉ vật lý
