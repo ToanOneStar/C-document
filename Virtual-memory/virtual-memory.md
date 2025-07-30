@@ -202,7 +202,7 @@ MMU (Đơn vị quản lý bộ nhớ) được tích hợp trong CPU, dịch đ
 
 Phân trang chia bộ nhớ ảo thành "trang" (pages) và bộ nhớ vật lý thành "khung trang" (frames) có kích thước cố định, dao động từ 4KB đến 16KB tùy thuộc vào kiến trúc của hệ thống. Trang ảo được ánh xạ tới khung trang vật lý.
 
-![page-frame](../image/test2.png)
+![page-frame](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472377577-c5e265c9-79fb-4a2e-b12a-eba48f0ead8b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T082247Z&X-Amz-Expires=300&X-Amz-Signature=56a82ea4509227b250a75748418ad59c881538c7b0474ddebb5d86768b7becc5&X-Amz-SignedHeaders=host)
 
 Một ưu điểm quan trọng của phân trang là nó cho phép phân bổ không gian địa chỉ không liên tục trong bộ nhớ vật lý. Điều này có nghĩa là các phần của một chương trình (các trang) có thể được lưu trữ ở các vị trí vật lý khác nhau trong RAM mà vẫn xuất hiện liên tục trong không gian địa chỉ ảo của chương trình. Cơ chế này giúp tránh vấn đề phân mảnh bộ nhớ bên ngoài, nơi các khối không gian trống nhỏ bị phân tán, khiến không có khối nào đủ lớn để chứa một yêu cầu bộ nhớ liên tục lớn.
 
