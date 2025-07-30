@@ -106,7 +106,7 @@ Trước khi cơ chế bộ nhớ ảo (Virtual Memory) được ra đời, vi�
 
 - **Bộ nhớ chia sẻ tự do**: Khi một chương trình được nạp vào RAM, nó được cấp phát một vùng địa chỉ vật lý. Tuy nhiên, không có cơ chế phần cứng hoặc phần mềm nào để ngăn chặn chương trình đó truy cập vào các địa chỉ vật lý nằm ngoài vùng của nó, tức là các vùng nhớ thuộc về chương trình khác hoặc thậm chí là của hệ điều hành.
 
-![ram-xp](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472383289-43dcef07-c376-4683-a408-606657f14da1.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083311Z&X-Amz-Expires=300&X-Amz-Signature=3610783246a656fa753825e7d227024312e660f4523b77b8e9210e212d7cc7f8&X-Amz-SignedHeaders=host)
+![ram-xp](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472385794-aacfe4ad-77e4-47df-9e9c-a601211b4b43.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083859Z&X-Amz-Expires=300&X-Amz-Signature=ecf3206493235bb595f0e93dc39417131d764c298124109cddeaffa901ca7e4f&X-Amz-SignedHeaders=host)
 
 - Trong sơ đồ này, nếu Chương trình B muốn truy cập vào vùng nhớ của Chương trình A hoặc OS, nó có thể làm được vì không có hàng rào bảo vệ.
 
