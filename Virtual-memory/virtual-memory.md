@@ -292,7 +292,7 @@ Thrashing cho thấy giới hạn của bộ nhớ ảo khi thiếu tài nguyên
 
 Chương trình C được tổ chức thành các phân đoạn (segments) riêng biệt trong không gian địa chỉ ảo của tiến trình, mỗi phân đoạn có mục đích cụ thể.
 
-![memory-layout](../image/memory-layout.png)
+![memory-layout](../image/memory-layoutt.png)
 
 1. Text Segment (Code Segment): Lưu mã thực thi đã biên dịch, thường chỉ đọc để bảo mật.
 2. Data Segment: Lưu biến toàn cục và tĩnh đã khởi tạo. Chia thành:
