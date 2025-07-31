@@ -8,7 +8,7 @@ Trước khi cơ chế bộ nhớ ảo (Virtual Memory) ra đời, các chương
 
 Bộ nhớ vật lý, hay còn gọi là RAM, luôn có một dung lượng nhất định. Ví dụ, một máy tính có thể chỉ có 4GB, 8GB hoặc 16GB RAM. Khi một chương trình được khởi chạy, toàn bộ mã lệnh, dữ liệu, và các tài nguyên khác của nó phải được sao chép từ bộ nhớ phụ (như ổ cứng) vào RAM. Nếu kích thước của chương trình lớn hơn dung lượng RAM còn trống, chương trình sẽ không thể được nạp và do đó không thể chạy được.
 
-![ram2](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472813363-8ea0043a-12e6-4450-8f87-06b10cf8027a.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T042615Z&X-Amz-Expires=300&X-Amz-Signature=a1b7ce71b3dc5bfc2d478aff89f54f42ce8d74ae63b6e08ef7d798334eadcb15&X-Amz-SignedHeaders=host)
+![ram2](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472846892-b5611f5b-a65e-4100-a655-fe46192efad0.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T063731Z&X-Amz-Expires=300&X-Amz-Signature=d9b61783514edbf5004d5934187a6a88e24bf6de258b6e46710226ff641f48e7&X-Amz-SignedHeaders=host)
 
 Vấn đề này đặc biệt nghiêm trọng đối với các ứng dụng lớn và phức tạp như phần mềm chỉnh sửa video, trò chơi đồ họa cao, cơ sở dữ liệu lớn, hoặc các môi trường phát triển tích hợp (IDE). Các ứng dụng này thường yêu cầu một lượng lớn bộ nhớ để hoạt động. Với mô hình cũ, người dùng sẽ liên tục gặp phải tình trạng "out of memory" (hết bộ nhớ), hoặc không thể chạy được các chương trình này ngay từ đầu.
 
@@ -106,7 +106,7 @@ Trước khi cơ chế bộ nhớ ảo (Virtual Memory) được ra đời, vi�
 
 - **Bộ nhớ chia sẻ tự do**: Khi một chương trình được nạp vào RAM, nó được cấp phát một vùng địa chỉ vật lý. Tuy nhiên, không có cơ chế phần cứng hoặc phần mềm nào để ngăn chặn chương trình đó truy cập vào các địa chỉ vật lý nằm ngoài vùng của nó, tức là các vùng nhớ thuộc về chương trình khác hoặc thậm chí là của hệ điều hành.
 
-![ram-xp](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472813543-231bb8e2-674e-4c8a-9e23-0e981a99a002.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T042711Z&X-Amz-Expires=300&X-Amz-Signature=277e5778a574c4950004f3efff834c47fa6ffcef4fa622c1008b5a4708381ba2&X-Amz-SignedHeaders=host)
+![ram-xp](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472847197-e3eee452-faa3-4c7a-b092-51a2bb811ffc.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T063805Z&X-Amz-Expires=300&X-Amz-Signature=ce7df1b8c360a04f751ddfe9478f8e79c3dd19490c9ace290c06cd53628c8faf&X-Amz-SignedHeaders=host)
 
 - Trong sơ đồ này, nếu Chương trình B muốn truy cập vào vùng nhớ của Chương trình A hoặc OS, nó có thể làm được vì không có hàng rào bảo vệ.
 
