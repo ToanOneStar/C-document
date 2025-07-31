@@ -182,6 +182,12 @@ Mục đích chính của bộ nhớ ảo không chỉ mở rộng dung lượng
 Trong một hệ thống máy tính sử dụng bộ nhớ ảo, các chương trình không trực tiếp sử dụng địa chỉ bộ nhớ vật lý. Thay vào đó, chúng hoạt động với các địa chỉ ảo. **Địa chỉ ảo** là các địa chỉ được tạo ra và sử dụng bởi chương trình, cung cấp một cái nhìn trừu tượng và liên tục về bộ nhớ. Ngược lại, **địa chỉ vật lý** là các địa chỉ thực tế trong bộ nhớ RAM (bộ nhớ truy cập ngẫu nhiên) của máy tính, nơi dữ liệu thực sự được lưu trữ.
 
 
+Khi một địa chỉ ảo (Virtual Address - VA) được tạo ra, nó được chia thành hai phần:
+
+- **Số trang ảo (Virtual Page Number - VPN)**: Phần này xác định trang ảo mà CPU muốn truy cập. Đây chính là phần cần được dịch từ không gian ảo sang không gian vật lý.
+
+- **Offset trong trang (Offset within Page)**: Phần này xác định vị trí cụ thể của dữ liệu (bytes) bên trong trang đó. Vì kích thước của một trang (và khung trang vật lý) là cố định, offset này không thay đổi khi trang được chuyển từ không gian ảo sang không gian vật lý. Nó chỉ đơn giản là chỉ ra vị trí tương đối bên trong trang đã dịch.
+
 ![vt-phys](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384178-382759a3-7b5c-4cee-be76-f68116bade7f.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083508Z&X-Amz-Expires=300&X-Amz-Signature=4593e4ca4b4ff58a56ee828ea0847728c09a30501498a0f5399502a2f895ded1&X-Amz-SignedHeaders=host)
 
 Hệ điều hành với sự hỗ trợ của phần cứng chuyên dụng, ánh xạ địa chỉ ảo sang vật lý. Mỗi tiến trình có không gian địa chỉ ảo riêng, tạo ảo giác truy cập bộ nhớ liên tục và độc quyền, dù RAM vật lý có thể phân mảnh và chia sẻ.
@@ -197,9 +203,62 @@ Trong kiến trúc CPU, độ dài của địa chỉ quyết định số lư�
 
 MMU (Đơn vị quản lý bộ nhớ) được tích hợp trong CPU, dịch địa chỉ ảo sang vật lý. Khi CPU cần truy cập một địa chỉ bộ nhớ ảo, MMU sẽ thực hiện quá trình dịch.
 
-![page-table](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384424-c99f58ae-5fda-4a7a-bf62-e34c1d3387c3.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083542Z&X-Amz-Expires=300&X-Amz-Signature=26ea9c31d884c295d8139ea0b0d75b1273ad85f035820547714cda58ed45f426&X-Amz-SignedHeaders=host)
+Để tăng tốc độ dịch địa chỉ, MMU duy trì một bộ đệm các ánh xạ được sử dụng gần đây từ bảng trang của hệ điều hành, được gọi là Bộ đệm tra cứu dịch (TLB - Translation Lookaside Buffer). 
 
-Để tăng tốc độ dịch địa chỉ, MMU duy trì một bộ đệm các ánh xạ được sử dụng gần đây từ bảng trang của hệ điều hành, được gọi là Bộ đệm tra cứu dịch (TLB - Translation Lookaside Buffer). Khi một địa chỉ ảo cần được dịch, TLB sẽ được tìm kiếm trước. Nếu tìm thấy một ánh xạ khớp trong TLB (gọi là TLB hit), quá trình dịch diễn ra rất nhanh. Tuy nhiên, nếu không có khớp (gọi là TLB miss), MMU, phần mềm hệ thống hoặc trình xử lý lỗi TLB của hệ điều hành sẽ tra cứu ánh xạ địa chỉ trong bảng trang chính Page Table (gọi là page walk) để tìm địa chỉ vật lý tương ứng.
+- Khi một địa chỉ ảo cần được dịch, TLB sẽ được tìm kiếm trước. Nếu tìm thấy một ánh xạ khớp trong TLB (gọi là TLB hit), quá trình dịch diễn ra rất nhanh. Tuy nhiên, nếu không có khớp (gọi là TLB miss), MMU, phần mềm hệ thống hoặc trình xử lý lỗi TLB của hệ điều hành sẽ tra cứu ánh xạ địa chỉ trong bảng trang chính Page Table (gọi là page walk) để tìm địa chỉ vật lý tương ứng. Vì Offset không cần dịch, nên nó không bao giờ được lưu trữ trong TLB (chỉ lưu VPN -> PFN) hay Page Table (chỉ lưu VPN -> PFN và các cờ trạng thái).
+- MMU tra cứu Page Table. Nếu Page Hit, Page Table cung cấp PA, và TLB được cập nhật. Nếu Page Fault, OS sẽ nạp trang từ đĩa, cập nhật Page Table và TLB.
+
+Ta có ví dụ quá trình dịch địa chỉ của biến ```a``` khi tăng ```a``` lên một đơn vị trong hệ điều hành 32 bit. Để đơn giản hóa, chúng ta sẽ giả định:
+
+1. Kích thước trang (Page Size): 4KB (4096 bytes). Điều này có nghĩa là mỗi trang ảo và mỗi khung trang vật lý đều có kích thước 4KB.
+
+2. Địa chỉ ảo (Virtual Address - VA): 32-bit.
+
+- 20 bit cao làm Số trang ảo (Virtual Page Number - VPN).
+
+- 12 bit thấp làm Offset trong trang (Offset within page) (2^12
+ = 4096 bytes = 4KB).
+
+3. Địa chỉ vật lý (Physical Address - PA): 32-bit.
+
+- 20 bit cao làm Số khung trang vật lý (Physical Frame Number - PFN).
+
+- 12 bit thấp làm Offset trong trang (Offset within page).
+
+4. Biến ```a```: Giả sử biến ```a``` nằm tại Địa chỉ ảo ```0x7C001234```.
+
+- VPN: 0x7C001 (phần địa chỉ ảo ```0x7C001000``` đến ```0x7C001FFF```)
+
+- Offset: ```0x234``` (địa chỉ của a nằm cách đầu trang 0x234 bytes)
+
+- Giá trị hiện tại của ```a```: 10
+
+
+![page-table](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472805541-5f48f56b-dc22-4579-a5bf-b36c7f8fca16.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T034849Z&X-Amz-Expires=300&X-Amz-Signature=addd017ef93dd375f0caa65c0005e57caeaa1d559e79e9e3b303707adef3d61c&X-Amz-SignedHeaders=host)
+
+Quy trình các bước diễn ra như sau:
+1. CPU tạo Địa chỉ ảo (VA): CPU muốn đọc giá trị của ```a```, nó sử dụng địa chỉ ảo VA = ```0x7C001234```.
+2. MMU nhận VA ```0x7C001234```. Nó tách ra VPN = ```0x7C001``` và Offset = ```0x234```.
+3. MMU tra cứu trong TLB. Giả sử đây là lần đầu truy cập trang này trong một thời gian dài, hoặc TLB đã đầy và entry này bị đẩy ra. TLB Miss: Không tìm thấy ánh xạ cho VPN ```0x7C001``` trong TLB.
+4. Do TLB Miss, MMU phải truy cập Page Table trong RAM. MMU sử dụng VPN ```0x7C001``` để tìm kiếm trong Page Table. Giả sử Page Table entry cho VPN ```0x7C001``` chỉ ra rằng trang này hiện đang nằm ở khung trang vật lý (PFN) ```0x05F7E``` và trang đó hợp lệ (valid) và đã có trong RAM (không phải Page Fault).
+5. MMU lấy PFN ```0x05F7E``` từ Page Table và kết hợp với Offset ```0x234```. PA = ```0x05F7E000``` + ```0x234``` = ```0x05F7E234```. CPU nhận PA ```0x05F7E234``` từ MMU. CPU truy cập vị trí bộ nhớ vật lý ```0x05F7E234``` và đọc được giá trị hiện tại của ```a```, đó là 10.
+6. MMU cập nhật ánh xạ (```0x7C001``` -> ```0x05F7E```) vào TLB để tăng tốc độ cho các lần truy cập sau.
+7. CPU đã đọc ```a = 10```. Nó thực hiện phép toán 10 + 1 = 11. CPU muốn ghi giá trị 11 này trở lại địa chỉ ảo của ```a```: VA = ```0x7C001234```.
+8. Tương tự như bước 2 và 3, MMU nhận VA ```0x7C001234```. VPN là ```0x7C001```, Offset là ```0x234```. MMU tra cứu TLB. Lần này, ánh xạ cho VPN ```0x7C001``` đã có sẵn từ lần truy cập trước. TLB Hit, MMU tìm thấy ánh xạ (```0x7C001``` -> ```0x05F7E```). Quá trình dịch địa chỉ diễn ra rất nhanh.
+9. MMU lấy PFN ```0x05F7E``` từ TLB và kết hợp với Offset ```0x234```. PA = ```0x05F7E234```. MMU gửi PA cho CPU, và CPU ghi giá trị 11 vào vị trí bộ nhớ vật lý đó.
+
+Chúng ta sẽ đặt ra câu hỏi: "Tại sao Page table và TLB đều chứa các giá trị ánh xạ giữa địa chỉ vật lí và địa chỉ ảo mà lại phải tách ra thành 2 nơi lưu trữ khác nhau, sao không lưu tất cả trên CPU cho nhanh?"
+
+Lí do ở đây là: 
+1. Một Page Table có thể chứa hàng triệu (hoặc thậm chí hàng tỷ) mục nhập (entries) nếu không gian địa chỉ ảo lớn và kích thước trang nhỏ. Ví dụ: Với địa chỉ ảo 64-bit và kích thước trang 4KB, một Page Table có thể cần 2^64
+ /2^12
+ =2^52
+  entries! Dù được tổ chức theo nhiều cấp (multi-level page table) để tiết kiệm bộ nhớ, chúng vẫn rất lớn. Do kích thước khổng lồ, Page Table không thể nằm hoàn toàn trên CPU (trong các thanh ghi hoặc bộ nhớ cache cấp 1/2) vì chi phí và không gian vật lý của CPU rất hạn chế nếu chế tạo sẽ rất đắt đỏ. Thay vào đó, Page Table thường được lưu trữ trong bộ nhớ vật lý chính (RAM).
+2. TLB cần tốc độ cực nhanh để không làm giảm hiệu suất CPU, vì vậy nó phải nằm trên CPU, nơi có tốc độ cao nhưng dung lượng hạn chế.
+
+
+
+
 ## 2.3. Phân trang (Paging) và Khung trang (Page Frames)
 
 Phân trang chia bộ nhớ ảo thành "trang" (pages) và bộ nhớ vật lý thành "khung trang" (frames) có kích thước cố định, dao động từ 4KB đến 16KB tùy thuộc vào kiến trúc của hệ thống. Trang ảo được ánh xạ tới khung trang vật lý.
@@ -221,17 +280,62 @@ Mỗi ánh xạ trong bảng trang được gọi là một mục nhập bảng 
 - **Global Bit:** Chỉ ra rằng trang này không được xóa khỏi TLB khi chuyển đổi ngữ cảnh, hữu ích cho các trang được chia sẻ bởi nhiều tiến trình hoặc các trang kernel.
 - **Process ID/Address Space ID (ASID):** Trong các hệ điều hành không phải là không gian địa chỉ đơn, thông tin này cần thiết để phân biệt các ánh xạ ảo của các tiến trình khác nhau, vì hai tiến trình có thể sử dụng cùng một địa chỉ ảo cho các mục đích khác nhau.
 
+Ta có tính toán sơ bộ kích thước tối đa của page table là bao nhiêu với RAM 4GB hệ điều hành 32 bit kích thước 1 frame là 4KB.
+1. Số lượng trang ảo tối đa:
+- Với hệ điều hành 32-bit, không gian địa chỉ ảo tối đa mà một tiến trình có thể có là 4GB (2^32 bytes).
+- Mỗi trang có kích thước 4KB.
+- Số lượng trang ảo tối đa = 2^32 / 2^12 = 2^20 trang.
+2. Kích thước của một mục nhập (entry) trong Page Table:
+- Mỗi mục nhập trong Page Table (Page Table Entry - PTE) phải chứa địa chỉ khung trang vật lý (Physical Frame Number - PFN) và các cờ trạng thái (flags) như Valid, Dirty, Present, Read/Write, v.v.
+- PFN: Với RAM 4GB (2^32 bytes) và kích thước frame 4KB (2^12 bytes), số lượng khung trang vật lý tối đa là 2^20 frames. Để lưu trữ số PFN này, chúng ta cần 20 bit.
+- Flags: Các cờ trạng thái thường yêu cầu thêm một vài bit (ví dụ: 8-12 bit).
+- Thông thường, kích thước một PTE được làm tròn lên một byte hoặc một từ (word) để tiện cho việc truy cập. Trong các hệ thống 32-bit, một PTE thường có kích thước là 4 bytes (32 bit) để chứa đủ PFN và các cờ.
+3. Kích thước tối đa của Page Table = Số lượng trang ảo tối đa × Kích thước một PTE = 2^20
+  trang × 4 bytes/entry = 4,194,304 bytes = 4MB
+
+Như vậy RAM 4GB, hệ điều hành 32-bit và kích thước frame là 4KB, kích thước tối đa của Page Table cho một tiến trình có thể lên đến 4MB.
 ## 2.5. Vai trò của Hệ điều hành trong Quản lý Bộ nhớ ảo
 
 OS quản lý bộ nhớ ảo, điều phối RAM vật lý và bộ nhớ thứ cấp để tạo ảo ảnh về không gian bộ nhớ lớn hơn.
 
-### 2.5.1. Cơ chế phân trang và Hoán đổi (Swapping)
+### 2.5.1. Cơ chế hoán đổi (Swapping)
 
-OS dùng phân trang để chuyển dữ liệu giữa RAM và đĩa, quản lý bộ nhớ hiệu quả. Hoán đổi (swapping) cho phép OS cấp phát bộ nhớ cho các tiến trình cần nhiều hơn RAM vật lý. Nó dùng không gian đĩa (tệp hoán đổi) như phần mở rộng của RAM. Khi RAM đầy, các trang không dùng sẽ được di chuyển đến tệp hoán đổi; khi cần, chúng được hoán đổi trở lại RAM (page swapping).
+OS dùng phân trang để chuyển dữ liệu giữa RAM và đĩa, quản lý bộ nhớ hiệu quả. Hoán đổi (swapping) cho phép OS cấp phát bộ nhớ cho các tiến trình cần nhiều hơn RAM vật lý. Nó dùng không gian đĩa (tệp hoán đổi) như phần mở rộng của RAM.
+
+**Khi RAM "đầy" và cần hoán đổi (Swap Out):** Hãy hình dung RAM là một căn phòng và các trang là những đồ vật. Khi căn phòng (RAM) đầy, bạn muốn mang thêm đồ mới vào (chạy chương trình mới hoặc cần thêm bộ nhớ cho chương trình hiện tại), bạn phải làm trống chỗ
+
+- Phát hiện nhu cầu: Khi một chương trình yêu cầu một trang bộ nhớ mà trang đó không có sẵn trong RAM (gây ra Page Fault), hoặc khi OS nhận thấy RAM sắp hết và cần cấp phát cho một tiến trình ưu tiên hơn.
+
+- Thuật toán thay thế trang (Page Replacement Algorithm): OS sẽ sử dụng các thuật toán thông minh (ví dụ: LRU - Least Recently Used, FIFO - First In, First Out) để xác định trang nào ít được sử dụng nhất hoặc ít có khả năng cần thiết nhất trong tương lai.
+
+- Hoán đổi ra đĩa (Swap Out / Page Out): Trang được chọn (gọi là "victim page") sẽ bị di chuyển từ RAM ra không gian hoán đổi trên ổ đĩa. Nếu trang này đã bị sửa đổi kể từ lần cuối cùng nó được nạp vào RAM (cờ "Dirty" được bật), OS bắt buộc phải ghi nó ra đĩa để đảm bảo dữ liệu không bị mất. Nếu trang chưa bị sửa đổi, nó có thể chỉ đơn giản bị loại bỏ khỏi RAM mà không cần ghi ra đĩa (vì bản gốc đã có trên đĩa rồi).
+
+- Giải phóng khung trang: Khung trang trong RAM mà trang bị hoán đổi vừa chiếm giữ sẽ được giải phóng và sẵn sàng cho các trang mới.
+
+**Khi trang đã hoán đổi được cần lại (Swap In):** 
+Khi một chương trình cố gắng truy cập vào một trang mà hiện đang nằm trong không gian hoán đổi (Page Fault):
+
+- Phát hiện Page Fault: MMU không tìm thấy ánh xạ địa chỉ vật lý cho trang ảo đó trong Page Table (cờ "Present" của PTE bị tắt).
+
+- OS xử lý Page Fault: Hệ điều hành được thông báo. Nó xác định trang cần thiết hiện đang nằm trong không gian hoán đổi.
+
+- Hoán đổi vào RAM (Swap In / Page In): OS sẽ tìm một khung trang trống trong RAM (hoặc, nếu RAM vẫn đầy, lại phải thực hiện một thao tác "Swap Out" khác để giải phóng chỗ). Sau đó, nó sẽ đọc trang cần thiết từ không gian hoán đổi trên đĩa và nạp vào khung trang trống đó trong RAM.
+
+- Cập nhật Page Table & TLB: Page Table entry cho trang đó được cập nhật để chỉ ra vị trí khung trang vật lý mới trong RAM, và ánh xạ này cũng được thêm vào TLB.
+
+- Tiếp tục thực thi: CPU có thể tiếp tục thực thi lệnh đã bị gián đoạn.
 
 ![swap](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384672-bd2f79f1-e45b-4ba2-b37b-541ceb83bf05.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083618Z&X-Amz-Expires=300&X-Amz-Signature=c369e54af27c967c8f9d839da731ba1f1d674520dfa879f4eed327fd9367e1eb&X-Amz-SignedHeaders=host)
 
-Hoán đổi cho phép chạy chương trình lớn hơn RAM và cải thiện đa nhiệm. Tuy nhiên, truy cập đĩa chậm hơn RAM, dẫn đến đánh đổi: tăng bộ nhớ đi kèm giảm hiệu suất do I/O chậm. OS phải cân bằng việc giữ trang cần thiết trong RAM và hoán đổi trang ít dùng ra đĩa để tối ưu hiệu suất. Bộ nhớ ảo không "miễn phí", có chi phí hiệu suất tiềm ẩn, đòi hỏi thuật toán quản lý thông minh từ OS.
+Lợi ích của Hoán đổi:
+
+- Cho phép chạy chương trình lớn hơn RAM vật lý: Đây là lợi ích quan trọng nhất. Một chương trình có thể có kích thước logic (ảo) lớn hơn rất nhiều so với RAM vật lý. OS chỉ nạp những phần cần thiết vào RAM, còn lại lưu trên đĩa.
+
+- Cải thiện đa nhiệm: Cho phép nhiều chương trình cùng chạy đồng thời, ngay cả khi tổng nhu cầu bộ nhớ của chúng vượt quá dung lượng RAM. OS có thể hoán đổi các trang của chương trình đang ngủ (idle) ra đĩa để cấp RAM cho chương trình đang hoạt động.
+
+- Tạo ra ảo giác về bộ nhớ lớn hơn: Từ góc độ của người dùng và chương trình, có vẻ như máy tính có một lượng RAM khổng lồ, không bị giới hạn bởi RAM vật lý.
+
+Tuy nhiên, truy cập đĩa chậm hơn RAM, dẫn đến đánh đổi: tăng bộ nhớ đi kèm giảm hiệu suất do I/O chậm. OS phải cân bằng việc giữ trang cần thiết trong RAM và hoán đổi trang ít dùng ra đĩa để tối ưu hiệu suất. Bộ nhớ ảo không "miễn phí", có chi phí hiệu suất tiềm ẩn, đòi hỏi thuật toán quản lý thông minh từ OS.
 
 ### 2.5.2. Page Faults và cách xử lý
 
