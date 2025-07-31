@@ -149,7 +149,7 @@ Phân mảnh ngoài xảy ra khi có đủ tổng dung lượng bộ nhớ trố
 
 Giả sử chúng ta có một vùng bộ nhớ vật lý được chia thành các khối.
 
-![dess](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472813807-e1c0d50b-84b2-4853-a5db-df5bebd086f1.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T042825Z&X-Amz-Expires=300&X-Amz-Signature=110c423c0c748d48141c7ee50042565aecf13448c8aeb134d5ac64756ac92742&X-Amz-SignedHeaders=host)
+![dess](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472847635-c99e07f3-9c9a-45dc-8f6f-5671ae1f6fdb.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T063925Z&X-Amz-Expires=300&X-Amz-Signature=5969e557c14ff9ce227f35dbf32667867d2f34ff359eb9c722230c3c6fdec5f8&X-Amz-SignedHeaders=host)
 
 Tại thời điểm này, tổng bộ nhớ trống là 30KB+50KB=80KB.
 Tuy nhiên, nếu một Chương trình C (60KB) cần được nạp, nó không thể được đặt vào vì không có một khối trống liền kề nào đủ 60KB. Mặc dù tổng dung lượng trống là 80KB, nhưng nó đã bị phân mảnh thành hai khối 30KB và 50KB. Đây chính là phân mảnh ngoài.
