@@ -1,3 +1,8 @@
+# 1. Vagrind là gì?
+Valgrind là một framework công cụ mạnh mẽ và linh hoạt, được thiết kế để thực hiện phân tích động (dynamic analysis) các chương trình. Nó giúp các nhà phát triển phát hiện lỗi và tối ưu hóa hiệu suất của mã nguồn bằng cách chạy chương trình trên một CPU mô phỏng, cho phép nó kiểm tra mọi truy cập bộ nhớ và giá trị được tính toán. Valgrind hoạt động trực tiếp trên các tệp thực thi hiện có mà không yêu cầu biên dịch lại hay liên kết lại chương trình, hoạt động như một "thám tử" tỉ mỉ, theo dõi quá trình thực thi, phát hiện rò rỉ bộ nhớ, truy cập bộ nhớ không xác định và các lỗi khác ở cấp độ nhị phân.
+
+Tại sao lỗi bộ nhớ lại khó phát hiện và nguy hiểm:
+Trong lập trình C/C++, quản lý bộ nhớ thủ công là một nguồn gốc phổ biến của các lỗi khó nhằn. Những vấn đề như cấp phát sai kích thước, sử dụng con trỏ chưa khởi tạo, truy cập bộ nhớ sau khi đã giải phóng (use-after-free), hoặc tràn bộ đệm (buffer overrun) có thể gây ra những hậu quả nghiêm trọng. Các lỗi này có thể dẫn đến hành vi không mong muốn, treo chương trình (crash), hoặc đưa ra kết quả không chính xác.
 # 2. Các lỗi bộ nhớ phổ biến
 ## 2.1. Invalid read/write of size X (Đọc/ghi không hợp lệ)
 
