@@ -198,3 +198,109 @@ valgrind --track-origins=yes ./exam
 Kết quả đầy đủ thông tin hơn:
 ![er3-1-1-2](../image/er3-1-1-2.png)
  Valgrind bây giờ nói rõ ràng rằng giá trị chưa khởi tạo là do ```x``` được cấp phát trên stack ở dòng 4.
+
+### 3.1.2. --leak-check=full và --show-reachable=yes (Kiểm tra rò rỉ bộ nhớ chi tiết)
+- ```--leak-check=full``` sẽ hiển thị thông tin chi tiết về mọi rò rỉ bộ nhớ.
+
+- ```--show-reachable=yes``` sẽ báo cáo cả những block bộ nhớ đã bị rò rỉ nhưng vẫn còn "địa chỉ truy cập" (reachable), tức là vẫn còn con trỏ trỏ đến chúng. Điều này hữu ích để tìm các rò rỉ "nhẹ" mà chương trình vẫn có thể truy cập được nhưng không thể giải phóng.
+
+Ví dụ đoạn code C sau:
+```c
+#include <stdlib.h>
+#include <string.h>
+
+char *create_string(const char *input) {
+    char *str = malloc(strlen(input) + 1);  // Cấp phát bộ nhớ
+    strcpy(str, input);
+    return str;
+}
+
+int main() {
+    char *a = create_string("Hello");
+    char *b = create_string("World");
+
+    // Quên giải phóng 'a' => memory leak
+    free(b);
+
+    return 0;
+}
+```
+
+Biến ```a``` không được free, dẫn đến rò rỉ bộ nhớ.
+
+Nếu không dùng ```--show-reachable=yes```, sẽ không thấy thông tin về các vùng nhớ còn trỏ được tới (reachable) nhưng vẫn chưa giải phóng.
+
+Debug với Valgrind:
+```bash
+valgrind --leak-check=full --show-reachable=yes ./exam
+```
+Kết quả debug:
+![er3-1-2](../image/er3-1-2.png)
+Ta thấy được chi tiết về địa chỉ vùng nhớ chưa được giải phóng và chỉ rõ biến cấp phát ử dòng 11.
+
+Giải thích các loại rò rỉ:
+
+1. ```definitely lost```: Bộ nhớ đã mất hoàn toàn con trỏ => **rò rỉ thực sự**.
+2. ```still reachable```: Vẫn còn trỏ tới được, nhưng không ```free``` => **có thể không rò rỉ**.
+3. ```indirectly lost```: Mất bộ nhớ được trỏ tới qua các con trỏ khác (gián tiếp).
+4. ```possibly lost```: Không chắc chắn mất, có thể bị lỗi trỏ không hợp lệ.
+### 3.2. Valgrind client requests
+Valgrind cung cấp một API nội bộ gọi là Valgrind client requests, cho phép bạn chèn các lệnh vào chương trình C/C++ để điều khiển quá trình kiểm tra — ví dụ như:
+
+- Đánh dấu một vùng bộ nhớ là defined hoặc undefined
+
+- Bắt đầu/dừng kiểm tra rò rỉ bộ nhớ
+
+- Kiểm tra xem một vùng bộ nhớ đã được khởi tạo chưa
+
+- Thêm các ghi chú vào báo cáo để dễ theo dõi
+
+Trước hết, bạn cần:
+```c
+#include <valgrind/valgrind.h>
+#include <valgrind/memcheck.h>
+```
+Đây là các file header do Valgrind cung cấp. Thư viện này chỉ có hiệu lực khi chạy dưới Valgrind — khi chạy thông thường, nó bị loại bỏ bởi các macro đặc biệt.
+
+Một số Client Request phổ biến:
+
+1. ```VALGRIND_MAKE_MEM_DEFINED(addr, len)```: Đánh dấu vùng nhớ là đã được khởi tạo.
+2. ```VALGRIND_MAKE_MEM_UNDEFINED(addr, len)```: Đánh dấu là chưa khởi tạo.
+3. ```VALGRIND_CHECK_MEM_IS_DEFINED(addr, len)```: Kiểm tra có vùng chưa khởi tạo.
+4. ```VALGRIND_DO_LEAK_CHECK```: Gọi kiểm tra rò rỉ bộ nhớ tại thời điểm đó.
+5. ```VALGRIND_PRINTF```: In log trực tiếp từ chương trình qua Valgrind.
+
+Ví dụ mã nguồn có sử dụng ```VALGRIND_CHECK_MEM_IS_DEFINED```:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <valgrind/memcheck.h>
+
+int main() {
+    char *buffer = malloc(10);
+
+    // Giả lập sử dụng vùng nhớ chưa được khởi tạo
+    if (VALGRIND_CHECK_MEM_IS_DEFINED(buffer, 10)) {
+        printf("Buffer is uninitialized!\n");
+    } else {
+        printf("Buffer is already defined.\n");
+    }
+
+    free(buffer);
+    return 0;
+}
+```
+Trong code trên ```malloc``` cấp phát nhưng không khởi tạo giá trị.
+```VALGRIND_CHECK_MEM_IS_DEFINED(ptr, size)``` trả về 1 nếu có lỗi, 0 nếu ổn.
+
+Debug với Valgrind:
+```bash
+gcc -g -o exam main.c
+valgrind ./exam
+```
+
+Kết quả:
+![er3-2-1](../image/er3-2-1.png)
+
+Vùng chưa khởi tạo giá trị Valgrind sẽ báo lỗi với vị trí và stacktrace.

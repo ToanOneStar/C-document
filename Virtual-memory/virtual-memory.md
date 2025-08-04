@@ -188,7 +188,7 @@ Khi một địa chỉ ảo (Virtual Address - VA) được tạo ra, nó đư�
 
 - **Offset trong trang (Offset within Page)**: Phần này xác định vị trí cụ thể của dữ liệu (bytes) bên trong trang đó. Vì kích thước của một trang (và khung trang vật lý) là cố định, offset này không thay đổi khi trang được chuyển từ không gian ảo sang không gian vật lý. Nó chỉ đơn giản là chỉ ra vị trí tương đối bên trong trang đã dịch.
 
-![vt-ps](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472384178-382759a3-7b5c-4cee-be76-f68116bade7f.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083508Z&X-Amz-Expires=300&X-Amz-Signature=4593e4ca4b4ff58a56ee828ea0847728c09a30501498a0f5399502a2f895ded1&X-Amz-SignedHeaders=host)
+![vt-ps](../image/vt-ps.png)
 
 Hệ điều hành với sự hỗ trợ của phần cứng chuyên dụng, ánh xạ địa chỉ ảo sang vật lý. Mỗi tiến trình có không gian địa chỉ ảo riêng, tạo ảo giác truy cập bộ nhớ liên tục và độc quyền, dù RAM vật lý có thể phân mảnh và chia sẻ.
 
@@ -234,7 +234,7 @@ Ta có ví dụ quá trình dịch địa chỉ của biến ```a``` khi tăng `
 - Giá trị hiện tại của ```a```: 10
 
 
-![mmu-update](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472814443-1fb73ad6-913d-4c47-9de4-ba6b81ddaa61.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T043106Z&X-Amz-Expires=300&X-Amz-Signature=8a3a15d8b1fe0285d5becae26d809d11394390a458df977320405bce61317e15&X-Amz-SignedHeaders=host)
+![mmu-update](../image/mmu-update.png)
 
 Quy trình các bước diễn ra như sau:
 1. CPU tạo Địa chỉ ảo (VA): CPU muốn đọc giá trị của ```a```, nó sử dụng địa chỉ ảo VA = ```0x7C001234```.
@@ -263,7 +263,7 @@ Lí do ở đây là:
 
 Phân trang chia bộ nhớ ảo thành "trang" (pages) và bộ nhớ vật lý thành "khung trang" (frames) có kích thước cố định, dao động từ 4KB đến 16KB tùy thuộc vào kiến trúc của hệ thống. Trang ảo được ánh xạ tới khung trang vật lý.
 
-![test2](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472377577-c5e265c9-79fb-4a2e-b12a-eba48f0ead8b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T082247Z&X-Amz-Expires=300&X-Amz-Signature=56a82ea4509227b250a75748418ad59c881538c7b0474ddebb5d86768b7becc5&X-Amz-SignedHeaders=host)
+![test2](../image/test2.png)
 
 Một ưu điểm quan trọng của phân trang là nó cho phép phân bổ không gian địa chỉ không liên tục trong bộ nhớ vật lý. Điều này có nghĩa là các phần của một chương trình (các trang) có thể được lưu trữ ở các vị trí vật lý khác nhau trong RAM mà vẫn xuất hiện liên tục trong không gian địa chỉ ảo của chương trình. Cơ chế này giúp tránh vấn đề phân mảnh bộ nhớ bên ngoài, nơi các khối không gian trống nhỏ bị phân tán, khiến không có khối nào đủ lớn để chứa một yêu cầu bộ nhớ liên tục lớn.
 
@@ -325,7 +325,7 @@ Khi một chương trình cố gắng truy cập vào một trang mà hiện đa
 
 - Tiếp tục thực thi: CPU có thể tiếp tục thực thi lệnh đã bị gián đoạn.
 
-![swapp](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472814811-913b27a9-87e1-408a-9474-f6a82dad39f8.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T043250Z&X-Amz-Expires=300&X-Amz-Signature=440fffb24f0583e3179c037f32c5cadbe31078145bec4610c5865b7b7298d2cb&X-Amz-SignedHeaders=host)
+![swapp](../image/swap.png)
 
 Lợi ích của Hoán đổi:
 
@@ -368,7 +368,7 @@ Các thuật toán này cho thấy đánh đổi giữa thực tiễn và hiệu
 
 **Thrashing** là tình trạng hệ thống dành quá nhiều thời gian hoán đổi trang thay vì thực thi tiến trình. Thiếu RAM gây Page Faults thường xuyên, buộc OS hoán đổi liên tục. Hoạt động này tiêu tốn CPU và I/O, giảm hiệu suất, dẫn đến nhiều Page Faults hơn.
 
-![thrashingg](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472814961-8d821adb-8e05-449b-8f28-7e0ddb3fb7a5.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T043336Z&X-Amz-Expires=300&X-Amz-Signature=6ae7008ea3be9e5b7c858608235593cb373825b6e3450041b55a2b83d717d058&X-Amz-SignedHeaders=host)
+![thrashingg](../image/thrashingg.png)
 
 **Nguyên nhân thrashing:**
 1. **Đa chương trình cao:** Quá nhiều tiến trình chạy đồng thời, không đủ RAM cho các trang cần thiết.
@@ -398,7 +398,7 @@ Thrashing cho thấy giới hạn của bộ nhớ ảo khi thiếu tài nguyên
 
 Chương trình C được tổ chức thành các phân đoạn (segments) riêng biệt trong không gian địa chỉ ảo của tiến trình, mỗi phân đoạn có mục đích cụ thể.
 
-![memory-layout](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472385236-320f9839-19d1-46ae-8f81-b56281588454.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250730%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250730T083737Z&X-Amz-Expires=300&X-Amz-Signature=1473456212e82ffd24293ac43b4c7b31785bdd637103b775084131d7dfa2fd53&X-Amz-SignedHeaders=host)
+![memory-layoutt](../image/memory-layoutt.png)
 
 1. Text Segment (Code Segment): Lưu mã thực thi đã biên dịch, thường chỉ đọc để bảo mật.
 2. Data Segment: Lưu biến toàn cục và tĩnh đã khởi tạo. Chia thành:
