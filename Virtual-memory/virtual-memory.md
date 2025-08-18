@@ -8,7 +8,7 @@ Trước khi cơ chế bộ nhớ ảo (Virtual Memory) ra đời, các chương
 
 Bộ nhớ vật lý, hay còn gọi là RAM, luôn có một dung lượng nhất định. Ví dụ, một máy tính có thể chỉ có 4GB, 8GB hoặc 16GB RAM. Khi một chương trình được khởi chạy, toàn bộ mã lệnh, dữ liệu, và các tài nguyên khác của nó phải được sao chép từ bộ nhớ phụ (như ổ cứng) vào RAM. Nếu kích thước của chương trình lớn hơn dung lượng RAM còn trống, chương trình sẽ không thể được nạp và do đó không thể chạy được.
 
-![ram2](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472846892-b5611f5b-a65e-4100-a655-fe46192efad0.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T063731Z&X-Amz-Expires=300&X-Amz-Signature=d9b61783514edbf5004d5934187a6a88e24bf6de258b6e46710226ff641f48e7&X-Amz-SignedHeaders=host)
+![ram2](../image/ram2.png)
 
 Vấn đề này đặc biệt nghiêm trọng đối với các ứng dụng lớn và phức tạp như phần mềm chỉnh sửa video, trò chơi đồ họa cao, cơ sở dữ liệu lớn, hoặc các môi trường phát triển tích hợp (IDE). Các ứng dụng này thường yêu cầu một lượng lớn bộ nhớ để hoạt động. Với mô hình cũ, người dùng sẽ liên tục gặp phải tình trạng "out of memory" (hết bộ nhớ), hoặc không thể chạy được các chương trình này ngay từ đầu.
 
@@ -106,7 +106,7 @@ Trước khi cơ chế bộ nhớ ảo (Virtual Memory) được ra đời, vi�
 
 - **Bộ nhớ chia sẻ tự do**: Khi một chương trình được nạp vào RAM, nó được cấp phát một vùng địa chỉ vật lý. Tuy nhiên, không có cơ chế phần cứng hoặc phần mềm nào để ngăn chặn chương trình đó truy cập vào các địa chỉ vật lý nằm ngoài vùng của nó, tức là các vùng nhớ thuộc về chương trình khác hoặc thậm chí là của hệ điều hành.
 
-![ram-xp](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472847197-e3eee452-faa3-4c7a-b092-51a2bb811ffc.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T063805Z&X-Amz-Expires=300&X-Amz-Signature=ce7df1b8c360a04f751ddfe9478f8e79c3dd19490c9ace290c06cd53628c8faf&X-Amz-SignedHeaders=host)
+![ram-xp](../image/ram-xp.png)
 
 - Trong sơ đồ này, nếu Chương trình B muốn truy cập vào vùng nhớ của Chương trình A hoặc OS, nó có thể làm được vì không có hàng rào bảo vệ.
 
@@ -149,7 +149,7 @@ Phân mảnh ngoài xảy ra khi có đủ tổng dung lượng bộ nhớ trố
 
 Giả sử chúng ta có một vùng bộ nhớ vật lý được chia thành các khối.
 
-![dess](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472847635-c99e07f3-9c9a-45dc-8f6f-5671ae1f6fdb.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T063925Z&X-Amz-Expires=300&X-Amz-Signature=5969e557c14ff9ce227f35dbf32667867d2f34ff359eb9c722230c3c6fdec5f8&X-Amz-SignedHeaders=host)
+![dess](../image/dess.png)
 
 Tại thời điểm này, tổng bộ nhớ trống là 30KB+50KB=80KB.
 Tuy nhiên, nếu một Chương trình C (60KB) cần được nạp, nó không thể được đặt vào vì không có một khối trống liền kề nào đủ 60KB. Mặc dù tổng dung lượng trống là 80KB, nhưng nó đã bị phân mảnh thành hai khối 30KB và 50KB. Đây chính là phân mảnh ngoài.
@@ -159,7 +159,7 @@ Phân mảnh trong xảy ra khi bộ nhớ được cấp phát cho một chươ
 
 Giả sử hệ thống cấp phát bộ nhớ theo các khối có kích thước 16KB. Chương trình X cần 10KB bộ nhớ.
 
-![langphi](https://github-production-user-asset-6210df.s3.amazonaws.com/165185364/472814071-6e5829ba-8a33-4e4f-a035-2387315d6238.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250731%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250731T042935Z&X-Amz-Expires=300&X-Amz-Signature=6c4c0b3b32a33bbda89d55fe5d8e25ffed012fea8309f994408d41ce5d57657e&X-Amz-SignedHeaders=host)
+![langphi](../image/langphi.png)
 
 Tác động của phân mảnh bộ nhớ
 1. **Lãng phí bộ nhớ:** Đây là tác động rõ ràng nhất. Các khối bộ nhớ trống không thể sử dụng được, làm giảm hiệu quả sử dụng RAM.
