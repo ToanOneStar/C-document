@@ -184,7 +184,7 @@ echo irqs-off > /sys/kernel/debug/tracing/current_tracer
 # Xem kết quả
 cat /sys/kernel/debug/tracing/trace
 ```
-## 4. Ví dụ log
+### 4. Ví dụ log
 ```
 # tracer: irqs-off
 #
