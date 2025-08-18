@@ -425,3 +425,43 @@ echo 'prev_pid == 1234 && next_pid != 5678' > /sys/kernel/debug/tracing/events/s
 ```
 
 Sử dụng bộ lọc giúp bạn thu hẹp phạm vi trace, chỉ tập trung vào những thông tin bạn quan tâm, làm cho quá trình gỡ lỗi và phân tích hệ thống hiệu quả hơn rất nhiều.
+
+Trong ngữ cảnh của Ftrace, trường `prev_state` trong sự kiện `sched_switch` cho biết trạng thái của tiến trình trước khi nó bị chuyển đổi (hoặc bị ngắt).
+
+Giá trị của `prev_state` tương ứng với các trạng thái của một tiến trình trong Linux, bao gồm:
+
+* **R (TASK_RUNNING)**: Tiến trình đang ở trạng thái **"có thể chạy"**. Nó đang chờ để được lên lịch chạy trên CPU, hoặc thực sự đang chạy trên một CPU khác. Đây là trạng thái thường thấy nhất cho tiến trình bị chuyển đổi, đặc biệt là trong các trường hợp chia sẻ thời gian (time-sharing).
+* **S (TASK_INTERRUPTIBLE)**: Tiến trình đang ở trạng thái **ngủ có thể bị ngắt**. Nó đang chờ một sự kiện nào đó (như hoàn thành I/O, một tín hiệu, hoặc một timer) và có thể bị đánh thức bởi một tín hiệu.
+* **D (TASK_UNINTERRUPTIBLE)**: Tiến trình đang ở trạng thái **ngủ không thể bị ngắt**. Tương tự như trạng thái `S`, nhưng tiến trình này không thể bị đánh thức bởi một tín hiệu. Trạng thái này thường được dùng khi tiến trình đang chờ một hoạt động I/O cấp thấp và việc bị ngắt giữa chừng có thể gây ra lỗi.
+* **T (TASK_STOPPED)**: Tiến trình đã bị **dừng lại** (stopped). Nó không thể chạy cho đến khi nhận được tín hiệu `SIGCONT` để tiếp tục.
+* **t (TASK_TRACED)**: Tiến trình bị **dừng lại** do đang được gỡ lỗi bởi một tiến trình khác (dùng `ptrace`).
+* **Z (EXIT_ZOMBIE)**: Tiến trình đã **kết thúc** nhưng chưa được tiến trình cha "thu hoạch" (wait-ed). Toàn bộ tài nguyên đã được giải phóng ngoại trừ cấu trúc `task_struct` nhỏ gọn để giữ thông tin kết thúc.
+* **X (TASK_DEAD)**: Tiến trình đã **chết** và không thể chạy nữa.
+
+Trong tệp `format` của Ftrace, các giá trị này thường được biểu diễn dưới dạng số (ví dụ: `0` cho `TASK_RUNNING`, `1` cho `TASK_INTERRUPTIBLE`, v.v.). Tuy nhiên, khi Ftrace hiển thị kết quả ra ngoài, nó sẽ chuyển đổi các giá trị số này thành các ký tự chữ cái tương ứng (`R`, `S`, `D`, v.v.) để dễ đọc hơn cho người dùng.
+
+Hiểu các giá trị này rất quan trọng để phân tích hành vi của hệ thống. Ví dụ, nếu bạn thấy một tiến trình liên tục bị chuyển đổi khi `prev_state` của nó là `D` (uninterruptible sleep), điều đó có thể chỉ ra một vấn đề về I/O hoặc tài nguyên, khi tiến trình đó đang chờ một hoạt động quan trọng nào đó nhưng không thể bị ngắt.
+## B42: Subsystem filters
+Bộ lọc con hệ thống (subsystem filters) là một tính năng hữu ích của Ftrace cho phép bạn áp dụng một bộ lọc cho tất cả các sự kiện trong một nhóm (subsystem) cùng một lúc.
+
+### Cách thức hoạt động
+
+Thay vì phải đi vào từng thư mục của sự kiện (ví dụ: `events/sched/sched_switch`) và đặt bộ lọc riêng lẻ, bạn có thể đặt một bộ lọc chung cho cả subsystem bằng cách ghi biểu thức lọc vào tệp `filter` ở thư mục gốc của subsystem đó.
+
+Ví dụ, để lọc tất cả các sự kiện trong subsystem `sched`, bạn sẽ ghi biểu thức vào tệp `/sys/kernel/debug/tracing/events/sched/filter`. Khi đó, bộ lọc này sẽ được áp dụng cho mọi sự kiện con của nó, chẳng hạn như `sched_switch`, `sched_wakeup`, `sched_stat_wait`, v.v.
+
+### Lưu ý quan trọng
+
+Việc áp dụng bộ lọc chung này có một số quy tắc cần lưu ý để tránh các lỗi không mong muốn:
+
+1.  **Bộ lọc riêng lẻ vẫn được giữ nguyên:** Nếu một sự kiện trong subsystem đã có một bộ lọc riêng được thiết lập trước đó, bộ lọc riêng đó sẽ được giữ lại. Việc đặt bộ lọc chung chỉ ảnh hưởng đến các sự kiện chưa có bộ lọc.
+
+2.  **Lỗi khi không tìm thấy trường:** Nếu biểu thức lọc chung tham chiếu đến một trường dữ liệu **không có** trong một sự kiện con nào đó, bộ lọc sẽ không được áp dụng cho sự kiện đó.
+
+    * **Ví dụ:** Giả sử bạn đặt bộ lọc chung cho subsystem `signal` là `sig == 9`. Bộ lọc này sẽ được áp dụng cho `signal_generate` (vì có trường `sig`) nhưng sẽ **không** được áp dụng cho một sự kiện khác trong cùng subsystem nếu sự kiện đó không có trường `sig`.
+
+3.  **Lỗi cú pháp hoặc lỗi khác:** Nếu bộ lọc không thể được áp dụng vì bất kỳ lý do nào khác (ví dụ: lỗi cú pháp), nó sẽ không có tác dụng với sự kiện đó.
+
+4.  **Các trường `common` luôn hoạt động:** Các trường chung (như `common_pid`, `common_type`) có mặt trong hầu hết mọi sự kiện. Do đó, các bộ lọc chỉ sử dụng các trường `common` luôn đảm bảo sẽ được áp dụng thành công cho tất cả các sự kiện trong một subsystem. Đây là cách an toàn và hiệu quả nhất để lọc đồng loạt.
+
+Tóm lại, **subsystem filters** giúp bạn tiết kiệm thời gian bằng cách áp dụng bộ lọc hàng loạt. Tuy nhiên, bạn cần hiểu rõ rằng bộ lọc này chỉ được áp dụng nếu cú pháp hợp lệ và các trường được tham chiếu tồn tại trong sự kiện con.
