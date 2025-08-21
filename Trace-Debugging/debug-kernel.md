@@ -465,3 +465,172 @@ Việc áp dụng bộ lọc chung này có một số quy tắc cần lưu ý �
 4.  **Các trường `common` luôn hoạt động:** Các trường chung (như `common_pid`, `common_type`) có mặt trong hầu hết mọi sự kiện. Do đó, các bộ lọc chỉ sử dụng các trường `common` luôn đảm bảo sẽ được áp dụng thành công cho tất cả các sự kiện trong một subsystem. Đây là cách an toàn và hiệu quả nhất để lọc đồng loạt.
 
 Tóm lại, **subsystem filters** giúp bạn tiết kiệm thời gian bằng cách áp dụng bộ lọc hàng loạt. Tuy nhiên, bạn cần hiểu rõ rằng bộ lọc này chỉ được áp dụng nếu cú pháp hợp lệ và các trường được tham chiếu tồn tại trong sự kiện con.
+## B49: Trace mkdir
+Ví dụ:
+```bash
+cat available_events | grep -i mkdir
+echo nop > current_tracer
+echo sys_enter_mkdir > set_event
+echo sys_enter_mkdirat >> set_event
+cat set_event
+mkdir /tmp/lwl1
+cat trace_pipe
+```
+Sau khi tạo folder và ```trace_pipe``` ta được kết quả:
+```
+mkdir-4357    [000] ...1.  1209.627126: sys_mkdir(pathname: 7ffd472de3dc, mode: 1ff)
+```
+Khi bạn tạo một thư mục bằng lệnh `mkdir` và theo dõi bằng `cat trace_pipe`, dòng thông tin bạn thấy là một bản ghi chi tiết về sự kiện gọi hàm hệ thống `sys_enter_mkdir`. Dòng này cung cấp các thông tin quan trọng về tiến trình, CPU, thời gian và các tham số của lệnh đã thực thi.
+
+Chúng ta sẽ phân tích từng phần của dòng output này:
+
+`mkdir-4357`
+* `mkdir`: Tên của tiến trình đã thực hiện lệnh gọi hệ thống.
+* `4357`: **Process ID (PID)** của tiến trình `mkdir`.
+
+`[000]`
+* Đây là số hiệu của **CPU** nơi tiến trình này đang chạy. Trong trường hợp này là CPU số `0`.
+
+`...1.`
+* Các cờ trạng thái (flags) của tiến trình.
+    * `...`: Các cờ chưa được sử dụng hoặc không liên quan.
+    * `1`: Cờ này cho biết preempt (khả năng bị chiếm quyền CPU) đã bị vô hiệu hóa (disabled) tại thời điểm sự kiện xảy ra. Điều này là bình thường vì các lệnh gọi hệ thống thường vô hiệu hóa preempt để đảm bảo tính toàn vẹn.
+    * `.`: Cờ này cho biết tiến trình không chạy trong ngữ cảnh ngắt.
+
+`1209.627126`
+* Đây là **thời gian** tính bằng giây kể từ khi hệ thống được khởi động.
+
+`sys_mkdir(pathname: 7ffd472de3dc, mode: 1ff)`
+* `sys_mkdir`: Tên của hàm hệ thống đang được gọi. Đây là sự kiện `sys_enter_mkdir` mà chúng ta đã thảo luận trước đó.
+* `pathname: 7ffd472de3dc`: Đây là tham số đầu tiên của hàm `mkdir`, là **địa chỉ bộ nhớ** (memory address) nơi chuỗi đường dẫn của thư mục mới được lưu trữ.
+* `mode: 1ff`: Đây là tham số thứ hai, đại diện cho **quyền truy cập** (permissions) của thư mục mới. Giá trị `1ff` (trong hệ thập lục phân) tương đương với `777` trong hệ bát phân, có nghĩa là "cho phép tất cả người dùng (chủ sở hữu, nhóm, và người khác) được đọc, ghi và thực thi".
+
+Sau đó nếu chúng ta tiếp tục tạo folder tương tự thì sẽ bị lỗi:
+```
+mkdir: cannot create directory ‘/tmp/lwl3’: File exists
+```
+
+`cat trace_pipe` sẽ có log như sau:
+```
+mkdir-4387    [000] ...1.  1485.169940: sys_mkdir -> 0xffffffffffffffef
+```
+Giải thích:
+`sys_mkdir -> 0xffffffffffffffef`
+
+- `sys_mkdir`: Tên của hàm hệ thống. Mũi tên -> cho biết đây là sự kiện kết thúc (sys_exit_mkdir).
+
+- `0xffffffffffffffef`: Đây là giá trị trả về của hàm mkdir().
+
+Trong hệ thống Unix/Linux, các hàm hệ thống thường trả về 0 khi thành công và một số âm (negative value) khi gặp lỗi.
+
+Giá trị `0xffffffffffffffef` trong hệ thập lục phân tương ứng với `-17` trong hệ thập phân. Mã lỗi `-17` này chính là giá trị của `EEXIST` (error number 17), có nghĩa là "File exists" (tệp đã tồn tại).
+
+Có thể kiểm tra mã lỗi là lỗi gì bằng:
+```bash
+perror 17
+```
+
+### Các mã lỗi liên quan đến `mkdir`
+
+1.  `EACCES` (Permission denied)
+    * **Mã lỗi:** 13
+    * **Lý do:** Bạn không có quyền ghi (write permission) vào thư mục cha mà bạn muốn tạo thư mục mới bên trong.
+    * **Ví dụ:** Bạn đang ở thư mục `/root` và cố gắng tạo một thư mục mới mà không phải là người dùng `root`. 
+
+2.  `ENOENT` (No such file or directory)
+    * **Mã lỗi:** 2
+    * **Lý do:** Một phần của đường dẫn mà bạn cung cấp không tồn tại.
+    * **Ví dụ:** Bạn cố gắng tạo thư mục `/home/user/new_folder/sub_folder`, nhưng thư mục `/home/user/new_folder` chưa tồn tại.
+
+3.  `EFAULT` (Bad address)
+    * **Mã lỗi:** 14
+    * **Lý do:** Địa chỉ bộ nhớ của đường dẫn thư mục không hợp lệ, thường xảy ra trong lập trình khi con trỏ chuỗi đường dẫn bị lỗi.
+    * **Ví dụ:** Một lập trình viên truyền một con trỏ NULL hoặc một địa chỉ không hợp lệ vào hàm `mkdir()` trong C.
+
+4.  **`ENOSPC` (No space left on device)**
+    * **Mã lỗi:** 28
+    * **Lý do:** Ổ đĩa đã đầy và không còn chỗ trống để tạo thư mục mới.
+    * **Ví dụ:** Bạn cố gắng tạo một thư mục trên một phân vùng đã hết dung lượng.
+
+5.  `EROFS` (Read-only file system)
+    * **Mã lỗi:** 30
+    * **Lý do:** Bạn đang cố gắng tạo thư mục trên một hệ thống tệp chỉ có quyền đọc (read-only), chẳng hạn như một USB được gắn ở chế độ chỉ đọc.
+    * **Ví dụ:** Hệ thống tệp `/` bị gắn ở chế độ chỉ đọc do lỗi hệ thống, và bạn cố gắng tạo một thư mục mới.
+
+Hiểu các mã lỗi này giúp bạn không chỉ biết lệnh `mkdir` thất bại mà còn hiểu **tại sao** nó thất bại, từ đó giúp việc gỡ lỗi nhanh hơn nhiều.
+## B50: Trace USB
+```bash
+echo 1 > events/xhci-hcd/enable
+cat set_event
+cat trace_pipe
+```
+## B51: Trace Page fault
+Sự kiện **page fault** (lỗi trang) xảy ra khi một chương trình cố gắng truy cập vào một vùng bộ nhớ ảo (virtual memory) nhưng vùng đó lại không có sẵn trong bộ nhớ vật lý (RAM) tại thời điểm đó. Đây là một cơ chế quan trọng của hệ điều hành để quản lý bộ nhớ, không hẳn là một lỗi nghiêm trọng.
+
+```bash
+echo 1 > events/exceptions/enable 
+```
+
+### Cách thức hoạt động của Page Fault
+
+1.  **Chương trình yêu cầu bộ nhớ:** Một chương trình yêu cầu truy cập một trang bộ nhớ.
+2.  **Địa chỉ không có trong RAM:** CPU nhận ra rằng địa chỉ bộ nhớ ảo này không tương ứng với một địa chỉ vật lý nào trong bảng trang hiện tại.
+3.  **CPU gây ra một exception:** CPU tạo ra một exception (ngoại lệ), tạm dừng việc thực thi của chương trình và chuyển quyền điều khiển cho kernel.
+4.  **Kernel xử lý:** Kernel nhận exception này và tìm trang bộ nhớ cần thiết, thường là từ bộ nhớ swap trên ổ đĩa.
+5.  **Nạp trang vào RAM:** Kernel nạp trang bộ nhớ đó từ ổ đĩa vào một khung trang (page frame) trống trong RAM.
+6.  **Cập nhật bảng trang:** Kernel cập nhật bảng trang để ánh xạ địa chỉ ảo đến địa chỉ vật lý mới.
+7.  **Tiếp tục thực thi:** Kernel trả quyền điều khiển về cho chương trình, và chương trình có thể tiếp tục thực thi như bình thường.
+
+### Các sự kiện Ftrace
+
+Hai sự kiện `page_fault_user` và `page_fault_kernel` cho phép bạn theo dõi page fault xảy ra trong không gian người dùng và không gian kernel.
+
+* **`page_fault_user`**: Sự kiện này được kích hoạt khi một chương trình **người dùng** (user space) gây ra lỗi trang. Đây là trường hợp phổ biến nhất, ví dụ khi một chương trình truy cập một biến hoặc một phần của mã code mà kernel chưa nạp vào RAM. 
+* **`page_fault_kernel`**: Sự kiện này xảy ra khi chính **kernel** gây ra lỗi trang. Điều này ít phổ biến hơn và thường chỉ xảy ra khi kernel cần truy cập vào một trang bộ nhớ không có trong RAM.
+
+Cả hai sự kiện này đều được gọi từ hàm **`do_page_fault`** trong `arch/x86/mm/fault.c` của kernel. Bằng cách theo dõi các sự kiện này, bạn có thể phân tích tần suất page fault xảy ra, từ đó đánh giá hiệu suất của hệ thống và xác định các vấn đề về quản lý bộ nhớ.
+
+## B52: Trace module
+Khi nói đến các sự kiện trong thư mục `events/module`, chúng ta đang đề cập đến việc theo dõi cách Linux kernel quản lý các module. Các module là những đoạn mã có thể được nạp và gỡ bỏ khi kernel đang chạy, giúp mở rộng chức năng của kernel mà không cần khởi động lại.
+
+```bash
+echo 1 > events/module/enable 
+```
+
+### Cơ chế quản lý module
+
+Một cơ chế quan trọng là **đếm tham chiếu (reference-counted)**. Kernel sử dụng một bộ đếm để theo dõi xem một module đang được sử dụng bởi bao nhiêu thành phần khác.
+* Lệnh `rmmod` (gỡ bỏ module) sẽ thất bại nếu bộ đếm tham chiếu không về 0, để tránh gỡ bỏ một module đang được sử dụng.
+
+---
+
+### Các sự kiện Ftrace chính
+
+Dưới đây là các sự kiện quan trọng trong `events/module` giúp bạn theo dõi vòng đời của một module:
+
+#### 1. Tăng/Giảm bộ đếm tham chiếu
+
+* **`module_get`**:
+    * Sự kiện này được gọi từ hàm **`try_module_get()`**.
+    * Nó kích hoạt khi một thành phần nào đó của kernel yêu cầu sử dụng một module, làm **tăng** bộ đếm tham chiếu của module đó lên 1.
+* **`module_put`**:
+    * Sự kiện này được gọi từ hàm **`module_put()`**.
+    * Nó kích hoạt khi một thành phần không còn sử dụng module nữa, làm **giảm** bộ đếm tham chiếu của module đó xuống 1.
+
+#### 2. Nạp/Gỡ bỏ module
+
+* **`module_load`**:
+    * Được gọi từ hàm **`load_module()`**.
+    * Sự kiện này xảy ra khi một module được nạp vào kernel bằng các lệnh gọi hệ thống như **`init_module`** hoặc **`finit_module`**.
+* **`module_free`**:
+    * Được gọi từ hàm **`free_module()`**.
+    * Sự kiện này xảy ra khi một module được gỡ bỏ khỏi kernel, thường là thông qua lệnh gọi hệ thống **`delete_module`**.
+
+#### 3. Yêu cầu nạp module từ kernel
+
+* **`module_request`**:
+    * Dùng để load module từ kernel space.
+    * Được gọi từ hàm **`__request_module()`**.
+    * Sự kiện này kích hoạt khi chính **kernel** cần một chức năng từ một module và tự động yêu cầu nạp module đó. Điều này xảy ra khi một driver hoặc một tính năng được yêu cầu, nhưng code của nó chưa được nạp vào kernel.
+
+Việc theo dõi các sự kiện này giúp bạn hiểu rõ cách kernel quản lý các module, xác định các lỗi liên quan đến việc nạp/gỡ bỏ, hoặc phân tích lý do tại sao một module không thể được gỡ bỏ.
