@@ -633,4 +633,185 @@ Dưới đây là các sự kiện quan trọng trong `events/module` giúp bạ
     * Được gọi từ hàm **`__request_module()`**.
     * Sự kiện này kích hoạt khi chính **kernel** cần một chức năng từ một module và tự động yêu cầu nạp module đó. Điều này xảy ra khi một driver hoặc một tính năng được yêu cầu, nhưng code của nó chưa được nạp vào kernel.
 
+## Trace cmd
 Việc theo dõi các sự kiện này giúp bạn hiểu rõ cách kernel quản lý các module, xác định các lỗi liên quan đến việc nạp/gỡ bỏ, hoặc phân tích lý do tại sao một module không thể được gỡ bỏ.
+
+`trace-cmd` là một công cụ dòng lệnh mạnh mẽ giúp đơn giản hóa việc sử dụng `ftrace` và `tracefs`. Thay vì phải tương tác trực tiếp với các tệp tin trong `tracefs` bằng các lệnh `echo` và `cat`, `trace-cmd` cung cấp một giao diện thân thiện và dễ nhớ hơn.
+
+### Lý do cần `trace-cmd`
+
+* **Đơn giản hóa việc sử dụng**: `ftrace` và `tracefs` được thiết kế để hoạt động trên các hệ thống hạn chế tài nguyên như BusyBox, nơi chỉ có các lệnh cơ bản. Tuy nhiên, việc ghi nhớ tất cả các tệp tin và đường dẫn để bật/tắt trace có thể rất phức tạp và tốn thời gian.
+* **Tự động hóa**: `trace-cmd` tự động xử lý việc gắn kết (mount) `tracefs` và thực hiện các tác vụ cơ bản, giúp người dùng không cần phải lo lắng về cấu trúc thư mục của `ftrace`.
+* **Giao diện thống nhất**: Nó cung cấp một bộ lệnh thống nhất để điều khiển `ftrace`, giúp quá trình gỡ lỗi và phân tích trở nên hiệu quả hơn.
+
+### Cách sử dụng
+
+Bạn cần cài đặt `trace-cmd` và chạy nó với quyền root.
+
+* **Cài đặt**: `sudo apt install trace-cmd`
+* **Tài liệu**: Lệnh `man trace-cmd` sẽ hiển thị tài liệu hướng dẫn chi tiết về cách sử dụng.
+* **Hoàn thành lệnh (bash completion)**: `trace-cmd` hỗ trợ tính năng hoàn thành lệnh, giúp bạn dễ dàng gõ các tùy chọn và tên sự kiện.
+
+### Ví dụ tương đương
+
+| Thao tác Ftrace với `echo`/`cat`                                                              | Thao tác với `trace-cmd`                                           |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `echo 1 > /sys/kernel/debug/tracing/tracing_on`                                               | `trace-cmd start`                                                  |
+| `echo 0 > /sys/kernel/debug/tracing/tracing_on`                                               | `trace-cmd stop`                                                   |
+| `echo 1 > /sys/kernel/debug/tracing/events/sched/sched_switch/enable`                         | `trace-cmd record -e sched_switch`                                 |
+| `cat /sys/kernel/debug/tracing/trace`                                                         | `trace-cmd report`                                                 |
+| `cat /sys/kernel/debug/tracing/events/sched/sched_switch/format`                              | `trace-cmd list -e sched_switch`                                   |
+| `echo > /sys/kernel/debug/tracing/events/sched/sched_switch/filter`                           | `trace-cmd record -e sched_switch --filter 'prev_pid==123'`        |
+
+***
+Dưới đây là giải thích chi tiết về các lệnh của `trace-cmd` để liệt kê các `tracers` có sẵn và các tính năng liên quan.
+
+### Liệt kê các `tracers` có sẵn
+
+Các `tracers` là các công cụ theo dõi trong nhân (kernel) được sử dụng để theo dõi các loại sự kiện khác nhau.
+* Lệnh `trace-cmd list -t` tương đương với `cat /sys/kernel/debug/tracing/available_tracers`, liệt kê tất cả các `tracers` mà hệ thống hỗ trợ.
+
+### Liệt kê các sự kiện
+
+* Lệnh `trace-cmd list -e` hiển thị danh sách tất cả các sự kiện (events) `ftrace` có sẵn trên hệ thống của bạn. Các sự kiện này được sắp xếp theo các nhóm (subsystems), ví dụ như `sched` (lập lịch), `ext4` (hệ thống tệp tin), `net` (mạng), v.v.
+* Lệnh `strace -e open,openat -o strace_output.txt trace-cmd list -e` sử dụng `strace` để theo dõi các lệnh gọi hệ thống `open` và `openat` mà `trace-cmd` thực hiện. Khi bạn chạy lệnh này, `trace-cmd` sẽ đọc các tệp trong `/sys/kernel/debug/tracing/events/` để lấy danh sách sự kiện, và `strace` sẽ ghi lại những lệnh gọi tệp này vào `strace_output.txt`.
+
+### Liệt kê các tùy chọn
+
+* Lệnh `trace-cmd list -o` liệt kê các tùy chọn `ftrace` có sẵn. Các tùy chọn này cho phép bạn tùy chỉnh hành vi của `ftrace`, ví dụ như bật/tắt `function tracing`, `irq-info`, v.v.
+* Lệnh `trace-cmd list -f` liệt kê các hàm lọc (filter functions) có sẵn. Các hàm này được sử dụng để tạo các biểu thức lọc phức tạp, ví dụ như lọc các sự kiện dựa trên tên tiến trình hoặc các giá trị cụ thể.
+
+### Biểu thức chính quy (Regular Expressions)
+
+Bạn có thể sử dụng các biểu thức chính quy để lọc kết quả liệt kê.
+* `trace-cmd list -e '^sig*'` liệt kê tất cả các sự kiện có tên bắt đầu bằng `sig` (ví dụ: `signal_generate`, `signal_deliver`).
+* `trace-cmd list -e '^sys*'` liệt kê tất cả các sự kiện có tên bắt đầu bằng `sys` (ví dụ: `sys_enter_read`, `sys_exit_write`).
+* `trace-cmd list -f '^sched*'` liệt kê các hàm lọc có tên bắt đầu bằng `sched`.
+
+### Hiển thị thông tin chi tiết về sự kiện
+
+`trace-cmd` cung cấp các tùy chọn để xem thông tin chi tiết của một sự kiện mà không cần phải duyệt các tệp `format` hay `trigger` trong `tracefs`.
+* `trace-cmd list -e '^sig*' -F`: Hiển thị **định dạng (format)** của tất cả các sự kiện bắt đầu bằng `sig`. Điều này tương đương với việc `cat events/signal/signal_generate/format`.
+* `trace-cmd list -e '^sig*' -l`: Hiển thị **bộ lọc (filter)** hiện tại của các sự kiện bắt đầu bằng `sig`.
+* `trace-cmd list -e '^sig*' -R`: Hiển thị các **trigger** đã được thiết lập cho các sự kiện bắt đầu bằng `sig`.
+
+
+### Các thông tin được hiển thị
+`trace-cmd stat` là một lệnh quan trọng trong `trace-cmd` được dùng để hiển thị trạng thái hiện tại của hệ thống `ftrace`. Nó giúp bạn kiểm tra nhanh những gì đang được theo dõi mà không cần duyệt qua các file trong `tracefs`.
+
+`trace-cmd stat` cung cấp một cái nhìn tổng quan về cấu hình `ftrace` hiện tại, bao gồm:
+
+* **Tracer**: Cho biết `tracer` nào đang hoạt động. Nếu bạn đã bật một `tracer` đặc biệt (ví dụ: `function_graph` hoặc `nop`), tên của nó sẽ được hiển thị ở đây.
+* **Events**: Liệt kê các sự kiện trace (events) đang được kích hoạt. Ví dụ, nếu bạn đã bật sự kiện `sched_switch`, nó sẽ xuất hiện trong danh sách này.
+* **Event filters**: Hiển thị các bộ lọc (filters) mà bạn đã áp dụng cho bất kỳ sự kiện nào. Điều này giúp bạn xác nhận xem bộ lọc đã được đặt đúng cách chưa.
+* **Function filters**: Cho thấy các bộ lọc được áp dụng cho `function tracer`. Nó giúp bạn theo dõi chỉ những hàm cụ thể, thay vì tất cả các hàm.
+* **Graph functions**: Khi sử dụng `function_graph tracer`, tùy chọn này hiển thị danh sách các hàm mà `tracer` sẽ vẽ biểu đồ. 
+* **`...`**: Ngoài ra, `trace-cmd stat` còn hiển thị các thông tin khác như kích thước bộ đệm trace, trạng thái của trace (`tracing_on` hay `off`), v.v.
+
+`man trace-cmd-stat` cung cấp tài liệu chi tiết về tất cả các tùy chọn và thông tin mà lệnh này có thể hiển thị.
+
+### Setting tracer
+`trace-cmd start` và `trace-cmd stop` là hai lệnh cơ bản nhất của `trace-cmd`, được dùng để điều khiển việc ghi trace vào bộ đệm vòng (ring buffer).
+
+`trace-cmd start` lệnh này dùng để **kích hoạt** một `tracer` hoặc một sự kiện cụ thể.
+
+* **Triggers (`-p`)**: Bạn có thể chọn một trong các `tracers` có sẵn bằng tùy chọn `-p` (`plugins`).
+    * `trace-cmd start -p function`: Bật **function tracer**, ghi lại mọi lệnh gọi hàm trong kernel.
+    * `trace-cmd start -p function_graph`: Bật **function_graph tracer**, ghi lại lệnh gọi hàm và vẽ biểu đồ luồng thực thi của chúng. 
+    * `trace-cmd start -p nop`: Bật **nop tracer**, một `tracer` "không làm gì cả". Thường được dùng để vô hiệu hóa một `tracer` đang hoạt động.
+
+* **Events (`-e`)**: Bạn có thể bật các sự kiện cụ thể thay vì toàn bộ `tracer` bằng tùy chọn `-e`.
+    * Bạn có thể chỉ định sự kiện theo định dạng `"subsystem:event-name"`, chỉ tên subsystem, hoặc chỉ tên event.
+    * `trace-cmd start -e syscalls`: Bật tất cả các sự kiện trong nhóm `syscalls`.
+    * `trace-cmd start -e sched`: Bật tất cả các sự kiện trong nhóm `sched` (lập lịch).
+    * `trace-cmd start -e sched_switch`: Chỉ bật sự kiện `sched_switch`.
+    * `trace-cmd start -e sched_switch -e sched_wakeup`: Bật nhiều sự kiện cùng lúc.
+    * Từ khóa `all` có thể dùng để bật tất cả các sự kiện: `trace-cmd start -e all`.
+
+Lệnh `strace` được dùng để theo dõi các lệnh gọi hệ thống của `trace-cmd` khi nó bật các sự kiện. Ví dụ, `strace` sẽ ghi lại các lệnh `open` và `write` mà `trace-cmd` thực hiện để bật các sự kiện.
+
+`trace-cmd stop` là lệnh bổ trợ cho `trace-cmd start`, được dùng để **ngừng ghi dữ liệu** vào bộ đệm vòng.
+
+* Lệnh này chỉ đơn thuần là dừng việc ghi, nhưng **không tắt hoàn toàn** `tracer` hoặc các sự kiện đang hoạt động.
+* Việc này có nghĩa là các `hooks` (`móc`) của `ftrace` vẫn đang được kích hoạt trong kernel, và vẫn có một số chi phí hiệu năng nhất định. Tuy nhiên, nó sẽ giảm đáng kể chi phí ghi dữ liệu vào bộ đệm.
+* Lệnh này rất hữu ích khi bạn muốn tạm dừng việc ghi dữ liệu để tránh tràn bộ đệm, sau đó có thể tiếp tục bằng `trace-cmd resume`.
+
+### Trace-cmd show
+`trace-cmd show` là một lệnh để hiển thị nội dung của các file trace đã được ghi lại bởi `ftrace`. Lệnh này giúp bạn xem kết quả của quá trình theo dõi một cách dễ dàng mà không cần phải tương tác trực tiếp với các file trong thư mục `tracefs`.
+
+
+#### Cách thức hoạt động
+
+* **Mặc định**: Lệnh `trace-cmd show` mặc định sẽ hiển thị nội dung của file `trace`. File này chứa dữ liệu trace đã được ghi vào bộ đệm vòng (ring buffer) và đã được "đóng băng" (frozen).
+* **`trace_pipe`**: Khi bạn sử dụng tùy chọn **`-p`** (viết tắt của `pipe`), `trace-cmd` sẽ hiển thị nội dung của file `trace_pipe`. File này hiển thị dữ liệu trace theo thời gian thực (real-time) và sẽ bị xóa ngay sau khi được đọc.
+* **`snapshot`**: Tùy chọn **`-s`** (viết tắt của `snapshot`) cho phép bạn xem nội dung của file `snapshot`. File này chứa một bản sao của bộ đệm vòng tại một thời điểm cụ thể.
+
+#### Các tùy chọn khác
+
+* **`show -f`**: Khi thêm tùy chọn `-f`, `trace-cmd show` sẽ hiển thị đường dẫn đầy đủ của file mà nó đang đọc. Điều này hữu ích để xác minh file nào đang được sử dụng.
+
+#### Ví dụ tương đương
+
+| Thao tác Ftrace với `cat`                                    | Thao tác với `trace-cmd`                 |
+| ----------------------------------------------------------- | ---------------------------------------- |
+| `cat /sys/kernel/debug/tracing/trace`                       | `trace-cmd show`                         |
+| `cat /sys/kernel/debug/tracing/trace_pipe`                  | `trace-cmd show -p`                      |
+| `cat /sys/kernel/debug/tracing/snapshot`                    | `trace-cmd show -s`                      |
+
+Tóm lại, `trace-cmd show` cung cấp một giao diện đơn giản và tiện lợi hơn nhiều so với việc sử dụng `cat` để xem các file trace.
+
+### Function filter
+**Lọc hàm (Function Filtering)** với `trace-cmd` là một cách để giới hạn `function` và `function_graph` tracer chỉ theo dõi các hàm mà bạn quan tâm. Điều này giúp giảm đáng kể lượng dữ liệu được ghi lại và giúp bạn tập trung vào các khu vực mã nguồn cụ thể.
+
+
+#### Cách thức hoạt động
+
+Bạn sử dụng tùy chọn `-l` (`--limit`) để chỉ định tên hàm mà bạn muốn theo dõi.
+
+* **Một hàm**: `trace-cmd start -p function -l do_page_fault` sẽ chỉ bật `function tracer` cho hàm `do_page_fault`.
+* **Nhiều hàm**: Bạn có thể sử dụng nhiều tùy chọn `-l` để theo dõi nhiều hàm cùng lúc. Ví dụ: `trace-cmd start -p function -l do_page_fault -l vfs_read`.
+* **Biểu thức glob**: `trace-cmd` cũng hỗ trợ các biểu thức glob để lọc theo mẫu.
+    * `match*`: Lọc các hàm có tên bắt đầu bằng `match`.
+    * `*match`: Lọc các hàm có tên kết thúc bằng `match`.
+    * `*match*`: Lọc các hàm có tên chứa `match`.
+
+`trace-cmd stat` là lệnh để kiểm tra xem bộ lọc đã được áp dụng hay chưa. Khi bạn chạy lệnh này sau khi đặt bộ lọc, nó sẽ hiển thị danh sách các hàm mà bạn đang theo dõi.
+
+#### Lệnh `trace-cmd reset`
+
+`trace-cmd reset` là một lệnh quan trọng để **đặt lại toàn bộ hệ thống trace**. Nó sẽ:
+* Vô hiệu hóa tất cả các `tracers` (`-p nop`).
+* Xóa tất cả các bộ lọc hàm và sự kiện.
+* Vô hiệu hóa tất cả các sự kiện (`events`).
+* Xóa toàn bộ nội dung trong trace buffer.
+
+Lệnh này giúp đảm bảo rằng hệ thống `ftrace` của bạn sạch sẽ trước khi bắt đầu một phiên trace mới.
+
+### Trace record & report
+`trace-cmd record` và `trace-cmd report` là hai lệnh cốt lõi của `trace-cmd` được sử dụng để ghi lại và phân tích dữ liệu trace. `record` dùng để thu thập dữ liệu và `report` dùng để hiển thị dữ liệu đã thu thập.
+
+#### `trace-cmd record`
+
+`trace-cmd record` được sử dụng để ghi lại dữ liệu từ `ftrace` và lưu vào một tệp tin. Lệnh này có nhiều chức năng hơn `trace-cmd start`.
+
+* **Cách hoạt động**: `record` thiết lập `ftrace` để ghi lại các sự kiện hoặc `tracers` đã chỉ định. Nó tạo ra một tiến trình ghi dữ liệu riêng cho mỗi CPU, các tiến trình này sẽ đọc trực tiếp dữ liệu nhị phân từ bộ đệm vòng (`trace_pipe_raw`) và lưu vào các tệp tin tạm thời. Sau đó, nó sẽ kết hợp tất cả các tệp này lại thành một tệp duy nhất tên là **`trace.dat`**.
+* **Cú pháp**: `trace-cmd record [options] [command]`
+    * Nếu bạn không chỉ định một lệnh nào sau `record`, nó sẽ tiếp tục ghi dữ liệu cho đến khi bạn nhấn `Ctrl+C`.
+    * Ví dụ: `trace-cmd record -p function` sẽ ghi lại các lệnh gọi hàm cho đến khi bạn dừng nó.
+    * Bạn cũng có thể chỉ định một lệnh, ví dụ: `trace-cmd record -p function ls`. Lệnh này sẽ ghi lại các lệnh gọi hàm trong suốt thời gian lệnh `ls` được thực thi và tự động dừng lại khi `ls` kết thúc.
+* **Tùy chọn `-F`**: Tùy chọn này lọc để chỉ theo dõi các sự kiện hoặc hàm được kích hoạt bởi chính lệnh mà bạn chỉ định.
+    * Ví dụ: `trace-cmd record -F -p function ls`. Lệnh này sẽ chỉ theo dõi các hàm được gọi bởi tiến trình `ls` chứ không phải các tiến trình khác đang chạy trên hệ thống.
+
+#### `trace-cmd report`
+
+`trace-cmd report` là lệnh để hiển thị báo cáo dễ đọc từ tệp `trace.dat` đã được tạo ra bởi `trace-cmd record`.
+* **Mặc định**: Lệnh `trace-cmd report` mặc định sẽ phân tích và hiển thị nội dung của tệp `trace.dat` theo định dạng chuẩn.
+* **Tùy chọn**:
+    * `--events`: Liệt kê tất cả các sự kiện đã được ghi lại trong tệp `trace.dat`.
+    * `-f`: Chỉ hiển thị các hàm đã được ghi lại (nếu bạn sử dụng `function tracer`).
+
+#### Tùy chọn `-k` của `record`
+
+* Mặc định, sau khi `trace-cmd record` hoàn tất, nó sẽ tự động đặt lại bộ đệm và vô hiệu hóa các `tracers` mà nó đã bật. Điều này đảm bảo trạng thái `ftrace` của bạn luôn sạch sẽ.
+* Tùy chọn `-k` (`--keep`) sẽ ngăn `trace-cmd` thực hiện việc dọn dẹp này. Các `tracers` và các bộ đệm sẽ được giữ nguyên trạng thái sau khi lệnh kết thúc.
+
