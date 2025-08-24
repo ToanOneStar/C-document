@@ -42,7 +42,7 @@ gcc -g -o exam main.c
 valgrind ./exam
 ```
 Debug với valgrind ta thu được:
-![error2](../image/error2.png)
+![error2](https://toanonestar.github.io/C-document/image/error2.png)
 Ta thấy Valgrind chỉ rõ lỗi đọc ghi không hợp lệ vào 1 byte ở dòng 11 và 13. Và đưa ra chỉ 5 byte được cấp phát ở dòng 9.
 
 **Cách giải quyết:** cấp thêm 1 byte cho '\0'.
@@ -81,10 +81,10 @@ gcc -g -o exam main.c
 valgrind ./exam
 ```
 Chạy chương trình ta được kết quả:
-![error1](../image/error1.png)
+![error1](https://toanonestar.github.io/C-document/image/error1.png)
 
 Debug với valgrind:
-![error11](../image/error11.png)
+![error11](https://toanonestar.github.io/C-document/image/error11.png)
 
 Ta thấy Valgrind báo cáo rằng chương trình đã cố gắng đọc/ghi 4 byte vào một vùng bộ nhớ không hợp lệ. Lỗi ghi không hợp lệ ở dòng 21 và đọc không hợp lệ ở dòng 22. Và chỉ ra rõ rằng vùng nhớ đã được giải phóng ở dòng 14.
 
@@ -110,7 +110,7 @@ int main() {
 Sau khi chạy chương trình bị lỗi ```Segmentation fault (core dumped)```
 
 Debug với Valgrind:
-![error3](../image/error3.png)
+![error3](https://toanonestar.github.io/C-document/image/error3.png)
 
 Valgrind chỉ ra lỗi không khởi tạo giá trị ở dòng 8 từ đó dẫn tới lỗi invalid write.
 
@@ -138,9 +138,9 @@ int main() {
 }
 ```
 Chạy chương trình ta gặp lỗi:
-![error2-2](../image/error2-2.png)
+![error2-2](https://toanonestar.github.io/C-document/image/error2-2.png)
 Debug với Valgrind:
-![er2-2](../image/er2-2.png)
+![er2-2](https://toanonestar.github.io/C-document/image/er2-2.png)
 
 Valgrind chỉ ra đã free ở dòng 10 và lỗi invalid free ở dòng 11.
 
@@ -163,7 +163,7 @@ int main() {
 Chạy chương trình trên ta gặp lỗi ```Segmentation fault (core dumped)```
 
 Debug với Valgrind:
-![er2-3](../image/er2-3.png)
+![er2-3](https://toanonestar.github.io/C-document/image/er2-3.png)
 Cách sửa đúng:
 ```c
 char str[] = "hello";  // Chuỗi được copy vào vùng stack (có thể sửa)
@@ -193,7 +193,7 @@ Chạy valgrind không có ```--track-origins```
 valgrind ./exam
 ```
 Kết quả:
-![er3-1-1](../image/er3-1-1.png)
+![er3-1-1](https://toanonestar.github.io/C-document/image/er3-1-1.png)
  Valgrind báo lỗi sử dụng giá trị chưa khởi tạo, nhưng không rõ nó đến từ đâu.
 
 Chạy lại với ```--track-origins=yes```:
@@ -201,7 +201,7 @@ Chạy lại với ```--track-origins=yes```:
 valgrind --track-origins=yes ./exam
 ```
 Kết quả đầy đủ thông tin hơn:
-![er3-1-1-2](../image/er3-1-1-2.png)
+![er3-1-1-2](https://toanonestar.github.io/C-document/image/er3-1-1-2.png)
  Valgrind bây giờ nói rõ ràng rằng giá trị chưa khởi tạo là do ```x``` được cấp phát trên stack ở dòng 4.
 
 ### 3.1.2. --leak-check=full và --show-reachable=yes (Kiểm tra rò rỉ bộ nhớ chi tiết)
@@ -240,7 +240,7 @@ Debug với Valgrind:
 valgrind --leak-check=full --show-reachable=yes ./exam
 ```
 Kết quả debug:
-![er3-1-2](../image/er3-1-2.png)
+![er3-1-2](https://toanonestar.github.io/C-document/image/er3-1-2.png)
 Ta thấy được chi tiết về địa chỉ vùng nhớ chưa được giải phóng và chỉ rõ biến cấp phát ử dòng 11.
 
 Giải thích các loại rò rỉ:
@@ -306,7 +306,7 @@ valgrind ./exam
 ```
 
 Kết quả:
-![er3-2-1](../image/er3-2-1.png)
+![er3-2-1](https://toanonestar.github.io/C-document/image/er3-2-1.png)
 
 Vùng chưa khởi tạo giá trị Valgrind sẽ báo lỗi với vị trí và stacktrace.
 
@@ -331,7 +331,7 @@ gcc -g -o exam main.c
 valgrind --leak-check=full ./exam
 ```
 Kết quả:
-![er3-2-2](../image/er3-2-2.png)
+![er3-2-2](https://toanonestar.github.io/C-document/image/er3-2-2.png)
 
 Valgrind kiểm tra 2 lần: 1 lần tại ```VALGRIND_DO_LEAK_CHECK```, 1 lần cuối chương trình.
 
@@ -372,7 +372,7 @@ gcc -g -o exam main.c
 valgrind ./exam
 ```
 Kết quả:
-![er3-2-3](../image/er3-2-3.png)
+![er3-2-3](https://toanonestar.github.io/C-document/image/er3-2-3.png)
 
 ```VALGRIND_PRINTF(...)``` sẽ chỉ in thông báo khi chạy dưới Valgrind, không in khi chạy bình thường.
 ### 3.2.4. CALLGRIND_START_INSTRUMENTATION
@@ -429,7 +429,7 @@ Dùng đồ họa với KCachegrind:
 kcachegrind callgrind.out.<pid>
 ```
 Giao diện sau khi chạy KCachegrind:
-![er3-2-4](../image/er3-2-4.png)
+![er3-2-4](https://toanonestar.github.io/C-document/image/er3-2-4.png)
 
 Trong đó:
 - **Incl. (Inclusive)**: Tổng chi phí của hàm đó và toàn bộ các hàm mà nó gọi.
@@ -494,7 +494,7 @@ valgrind --tool=callgrind ./exam
 kcachegrind callgrind.out.<PID>
 ```
 Kết quả:
-![er3-2-4-2](../image/er3-2-4-2.png)
+![er3-2-4-2](https://toanonestar.github.io/C-document/image/er3-2-4-2.png)
 
 Ta thấy trực quan hơn về tác dụng của inline function.
 ## 3.3. Helgrind
@@ -538,7 +538,7 @@ Debug với Valgrind:
 valgrind --tool=helgrind ./exam
 ```
 Kết quả:
-![er3-3-1](../image/er3-3-1.png)
+![er3-3-1](https://toanonestar.github.io/C-document/image/er3-3-1.png)
 
 Hiển thị rõ 2 thread xung đột gây lỗi race conditon ở dòng 8 khi truy cập biến count.
 # 4. Debug deadlock bằng GDB
@@ -629,7 +629,7 @@ Sử dụng lệnh sau trong GDB để kiểm tra các thread hiện có và đa
 info threads
 thread apply all bt
 ```
-![er4-1-1](../image/er4-1-1.png)
+![er4-1-1](https://toanonestar.github.io/C-document/image/er4-1-1.png)
 
 Ta thấy hiện tại chương trình đang ở thread có ```id = 1``` đây chính là main thread. 3 thread còn lại là các thread được tạo ra. Ta thấy ở 3 thread đều có trạng thái ```futex_wait``` có nghĩa là đang bị block và chờ khóa mutex. Điều này có nguy cơ dẫn tới deadlock.
 
@@ -639,7 +639,7 @@ thread 2
 bt
 ```
 Ta được kết quả như sau:
-![er4-1-2](../image/er4-1-2.png)
+![er4-1-2](https://toanonestar.github.io/C-document/image/er4-1-2.png)
 
 Ta thấy thread 2 đang chờ khóa mutex có địa chỉ ```0x555555558078```.
 
@@ -650,7 +650,7 @@ p &accounts[1].lock
 p &accounts[2].lock
 ```
 Ta được kết quả:
-![er4-1-3](../image/er4-1-3.png)
+![er4-1-3](https://toanonestar.github.io/C-document/image/er4-1-3.png)
 
 Như vậy thread có ```id = 2``` đang bị block bởi khóa mutex ```accounts[1].lock```.
 
@@ -659,10 +659,10 @@ Và để xem thread nào đang giữ ```accounts[1].lock``` ta làm như sau:
  p *(&accounts[1].lock)
 ```
 Ta được kết quả:
-![er4-1-4](../image/er4-1-4.png)
+![er4-1-4](https://toanonestar.github.io/C-document/image/er4-1-4.png)
 
 Ta thấy khóa mutex đang được giữ bởi thread có giá trị LWP 5061, đối chiếu với info thread thì đó là thread ```id = 3```:
-![er4-1-5](../image/er4-1-5.png)
+![er4-1-5](https://toanonestar.github.io/C-document/image/er4-1-5.png)
 
 Tương tự làm với 2 thread còn lại ta thấy ở đây gặp lỗi chờ vòng lặp thread này chờ khóa mutex được giữ bởi thread sau đó. Điều này chính là nguyên nhân gây ra deadlock.
 
@@ -676,4 +676,4 @@ sleep(1);
 pthread_mutex_lock(&accounts[to].lock);
 ```
 Và chương trình cho ra kết quả:
-![er4-1-6](../image/er4-1-6.png)
+![er4-1-6](https://toanonestar.github.io/C-document/image/er4-1-6.png)

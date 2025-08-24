@@ -176,7 +176,7 @@ bitbake trace-cmd
 Sau đó thêm `IMAGE_INSTALL_append = " trace-cmd"` vào file `local.config` và tiến hành build lại image `bitbake core-image-minimal` rồi flash vào thẻ nhớ.
 
 Sau khi flash thẻ nhớ, tiến hành khởi động pi và kiểm tra phiên bản `trace-cmd` xem đã có trên pi chưa:
-![ftrace-1](../image/ftrace-1.png)
+![ftrace-1](https://toanonestar.github.io/C-document/image/ftrace-1.png)
 # 2. Chương trình module kernel
 Bài viết này minh họa cách viết và sử dụng một Linux kernel module đơn giản để đánh giá độ trễ (scheduling latency) của tiến trình bằng cách kết hợp với `ftrace` và công cụ `trace-cmd`.
 
@@ -467,7 +467,7 @@ Tìm đường dẫn tới file bằng lệnh `find . -name "gpio-ftrace-demo.ko
     ```bash
     dmesg | tail -n 20
     ```
-![ftrace-3](../image/ftrace-3.png)
+![ftrace-3](https://toanonestar.github.io/C-document/image/ftrace-3.png)
 
 
 ## 3.2. Ghi lại trace với trace-cmd.
@@ -484,7 +484,7 @@ sudo trace-cmd record -p function_graph -e sched -e timer -o demo_trace.dat slee
 sudo trace-cmd report -i demo_trace.dat | head -n 50
 ```
 Kết quả:
-![ftrace-4](../image/ftrace-4.png)
+![ftrace-4](https://toanonestar.github.io/C-document/image/ftrace-4.png)
 
 **function\_graph tracer** ghi lại call stack các hàm kernel khi process `sleep` đang chạy. Cột bên trái có:
 
@@ -544,7 +544,7 @@ sudo trace-cmd report -i sched_trace.dat | grep gpio-ftrace-demo -A5 -B5
 ```
 
 Kết quả:
-![ftrace-5](../image/ftrace-5.png)
+![ftrace-5](https://toanonestar.github.io/C-document/image/ftrace-5.png)
 
 
 ### Phân tích kết quả
@@ -631,7 +631,7 @@ grep "sched_wakeup:.*demo_consumer" -A5 -B5
 ```
 Kết quả:
 
-![ftrace-6](../image/ftrace-6.png)
+![ftrace-6](https://toanonestar.github.io/C-document/image/ftrace-6.png)
 
 **Đánh giá hoạt động & độ trễ**
 

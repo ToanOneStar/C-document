@@ -235,7 +235,7 @@ cd trace_stat
 cat function0
 ```
 
-![profile](../image/profile.png)
+![profile](https://toanonestar.github.io/C-document/image/profile.png)
 
 Trong đó:
 - Hit → số lần hàm được gọi.

@@ -14,7 +14,7 @@ C99 (ISO/IEC 9899:1999) là một bản sửa đổi đáng kể, giới thiệu
 
 Một trong những tính năng nổi bật nhất của C99 là **Mảng có độ dài biến đổi (Variable-Length Arrays - VLA)**. Tính năng này cho phép lập trình viên khai báo các mảng với kích thước không cố định tại thời điểm biên dịch, mà được xác định tại thời điểm chạy chương trình. Điều này mang lại sự linh hoạt đáng kể trong việc quản lý bộ nhớ cục bộ, cho phép các hàm xử lý dữ liệu với kích thước động mà không cần cấp phát bộ nhớ động trên heap. Tuy nhiên, việc sử dụng VLA cũng tiềm ẩn rủi ro về lỗi tràn ngăn xếp (stack overflow) nếu kích thước mảng quá lớn, vì chúng được cấp phát trên stack.
 
-![VLA](../image/VLA.png)
+![VLA](https://toanonestar.github.io/C-document/image/VLA.png)
 
 C99 cũng giới thiệu **Thành viên mảng linh hoạt (Flexible Array Members)**, cho phép phần tử cuối cùng của một cấu trúc (struct) là một mảng không xác định kích thước. Điều này đặc biệt hữu ích cho việc cấp phát bộ nhớ động liền kề với cấu trúc, giúp tối ưu hóa việc sử dụng bộ nhớ và cải thiện hiệu suất truy cập dữ liệu.
 
@@ -22,7 +22,7 @@ C99 cũng giới thiệu **Thành viên mảng linh hoạt (Flexible Array Membe
 
 **Hàm nội tuyến (Inline Functions)** là một cải tiến khác nhằm cải thiện hiệu suất. Bằng cách sử dụng từ khóa inline, lập trình viên có thể đề xuất trình biên dịch chèn mã của hàm trực tiếp vào vị trí gọi, thay vì thực hiện một lời gọi hàm thông thường. Điều này giúp giảm chi phí lời gọi hàm và có thể dẫn đến mã thực thi nhanh hơn, đặc biệt đối với các hàm nhỏ được gọi thường xuyên.
 
-![Inline function](../image/inline.png)
+![Inline function](https://toanonestar.github.io/C-document/image/inline.png)
 
 **Khởi tạo được chỉ định (Designated Initializers)** mang lại sự rõ ràng và linh hoạt hơn trong việc khởi tạo các cấu trúc và mảng. Tính năng này cho phép lập trình viên khởi tạo các thành viên cụ thể của struct theo tên hoặc các phần tử cụ thể của mảng theo chỉ số, mà không cần phải khởi tạo tất cả các thành viên theo thứ tự khai báo.
 
@@ -35,7 +35,7 @@ C11 (ISO/IEC 9899:2011) là tiêu chuẩn tiếp theo sau C99, tập trung vào 
 
 Một trong những bổ sung quan trọng nhất của C11 là hỗ trợ đa luồng trực tiếp trong ngôn ngữ, cung cấp một mô hình bộ nhớ chi tiết để hỗ trợ tốt hơn cho nhiều luồng thực thi. Điều này bao gồm bộ chỉ định lớp lưu trữ **_Thread_local** cho các biến cục bộ của luồng, thư viện **<threads.h>** cung cấp các hàm tạo/quản lý luồng, mutex, biến điều kiện và chức năng lưu trữ dành riêng cho luồng.
 
-![Thread](../image/thread.png)
+![Thread](https://toanonestar.github.io/C-document/image/thread.png)
 
 C11 cũng mang lại cải thiện hỗ trợ Unicode dựa trên Báo cáo Kỹ thuật Unicode C ISO/IEC TR 19769:2004. Điều này bao gồm các kiểu char16_t và char32_t để lưu trữ dữ liệu được mã hóa UTF-16/UTF-32, các hàm chuyển đổi trong **<uchar.h>**, và các tiền tố ký tự chuỗi u và U, cũng như tiền tố u8 cho các ký tự được mã hóa UTF-8.3
 Một thay đổi đáng chú ý khác là loại bỏ hàm **gets**. Hàm này đã bị phản đối trong bản sửa đổi tiêu chuẩn C trước đó (ISO/IEC 9899:1999/Cor.3:2007(E)) do tính không an toàn của nó, dễ gây ra **lỗi tràn bộ đệm (buffer overflow)** khi đọc dữ liệu đầu vào. C11 khuyến khích sử dụng hàm **fgets** an toàn hơn để thay thế.
@@ -90,7 +90,7 @@ Cấu trúc bộ nhớ của một chương trình C mô tả cách dữ liệu 
 ## 2.2. Phân tích chi tiết các phân đoạn bộ nhớ
 Bộ nhớ của một chương trình C được chia thành năm phân đoạn chính, mỗi phân đoạn có chức năng và đặc điểm riêng biệt
 
-![Memory Layout](../image/memory-layout.png)
+![Memory Layout](https://toanonestar.github.io/C-document/image/memory-layout.png)
 
 ### 2.2.1. Text Segment
 - Chức năng: Phân đoạn text là nơi lưu trữ mã máy đã được biên dịch của chương trình. Nó chứa tất cả các lệnh và hàm mà chương trình sẽ thực thi.
@@ -124,7 +124,7 @@ Bộ nhớ của một chương trình C được chia thành năm phân đoạn
 - Chức năng: Stack là một vùng bộ nhớ được sử dụng cho các biến cục bộ (local variables), tham số hàm, và quản lý lời gọi hàm.
 - Đặc điểm: Stack hoạt động theo cấu trúc LIFO (Last In First Out). Mỗi khi một hàm được gọi, một khung stack (stack frame) được tạo ra và đẩy vào stack để lưu trữ các biến cục bộ, tham số, và địa chỉ trả về của hàm gọi.
 
-![Stack](../image/stack3.png)
+![Stack](https://toanonestar.github.io/C-document/image/stack3.png)
   
 Khi main() được gọi, function frame của main() sẽ được push vào stack, và khi function sum() được gọi thì function frame của sum() sẽ được push vào. Cấu trúc của một function frame gồm bốn phần chính: Function Parameter, Return Address, Saved Previus Frame Pointer, Local Variable.
 
@@ -136,14 +136,14 @@ Funtion Parameter là các tham số truyền vào. Trong ví dụ trên Return 
 
 Sự tương tác giữa Heap và Stack là một khía cạnh quan trọng của cấu trúc bộ nhớ. Chúng thường tăng trưởng ngược chiều nhau: heap mở rộng về phía các địa chỉ bộ nhớ cao hơn, trong khi stack phát triển về phía các địa chỉ thấp hơn (trên hầu hết các kiến trúc). Mối quan hệ đối nghịch về hướng tăng trưởng này không chỉ là một đặc điểm kiến trúc mà còn là một cơ chế phòng vệ quan trọng của hệ điều hành để cảnh báo tình trạng cạn kiệt bộ nhớ ảo của tiến trình. Chiến lược tăng trưởng đối lập này giúp tối đa hóa không gian địa chỉ ảo liền kề có sẵn cho cả cấp phát động (heap) và quản lý lời gọi hàm (stack) trong không gian bộ nhớ ảo của một tiến trình. Khi con trỏ stack và con trỏ heap gặp nhau, điều đó báo hiệu rằng bộ nhớ trống của chương trình đã cạn kiệt, có thể dẫn đến lỗi Out of Memory hoặc Stack Overflow tùy thuộc vào việc phân đoạn nào chạm giới hạn trước. Điểm gặp nhau này hoạt động như một ranh giới tự nhiên và một tín hiệu cho thấy khả năng cạn kiệt tài nguyên, mà hệ điều hành có thể xử lý (ví dụ: bằng cách gửi tín hiệu như SIGSEGV hoặc kích hoạt OOM killer). Việc hiểu rõ động lực này là rất quan trọng để thiết kế các ứng dụng mạnh mẽ có thể dự đoán và xử lý các giới hạn bộ nhớ một cách linh hoạt.
 
-![Stack-heap](../image/stack-heap.png)
+![Stack-heap](https://toanonestar.github.io/C-document/image/stack-heap.png)
 
 Để minh họa cách các biến toàn cục và tĩnh ảnh hưởng đến kích thước các phân đoạn bộ nhớ, có thể sử dụng lệnh size(1) trên các hệ thống Unix/Linux (hoặc các công cụ tương đương như MinGW trên Windows). Lệnh này báo cáo kích thước (theo byte) của các phân đoạn text, data và bss của một tệp nhị phân. Ví dụ, việc khai báo một biến toàn cục chưa khởi tạo như
 ```int global;``` sẽ làm tăng kích thước của phân đoạn BSS. Ngược lại, một biến tĩnh đã khởi tạo như ```static int s_var = 100;``` sẽ làm tăng kích thước của phân đoạn Data.
 
 Sự phân biệt giữa Data và BSS không chỉ là về việc khởi tạo mà còn tối ưu hóa việc tải chương trình và sử dụng bộ nhớ vật lý. Phân đoạn Data yêu cầu lưu trữ các giá trị khởi tạo thực tế trong tệp thực thi của chương trình. Tuy nhiên, phân đoạn BSS không lưu trữ các giá trị 0 ban đầu trong tệp thực thi; nó chỉ lưu trữ kích thước của phân đoạn BSS. Hệ điều hành chịu trách nhiệm khởi tạo vùng bộ nhớ này bằng 0 khi chương trình được tải. 
 
-![data-bss](../image/data.png)
+![data-bss](https://toanonestar.github.io/C-document/image/data.png)
 
 Thiết kế này dẫn đến kích thước tệp thực thi nhỏ hơn cho các chương trình có nhiều biến toàn cục/tĩnh chưa khởi tạo, vì các giá trị 0 không cần phải được lưu trữ rõ ràng. Nó cũng dẫn đến thời gian tải chương trình nhanh hơn vì hệ điều hành chỉ cần cấp phát và khởi tạo một vùng bộ nhớ bằng 0 thay vì đọc một khối lớn các giá trị 0 từ đĩa. Đây là một tối ưu hóa cấp thấp giúp cải thiện hiệu quả hệ thống. Đối với các hệ thống nhúng hoặc các ứng dụng có ràng buộc tài nguyên nghiêm ngặt, việc hiểu rõ sự khác biệt này có thể rất quan trọng để giảm thiểu kích thước tệp thực thi và thời gian khởi động. Nó cũng ngụ ý rằng việc dựa vào khởi tạo 0 mặc định cho các biến BSS là một thực hành chuẩn và hiệu quả.
 
@@ -157,7 +157,7 @@ Stack Frame, còn được gọi là Activation Record, là một cấu trúc d�
 ## 3.2. Các thành phần cốt lõi của một Stack Frame
 
 Một khung stack điển hình của một hàm con chứa các thành phần sau :
-![stack-frame](../image/stack-frame.png)
+![stack-frame](https://toanonestar.github.io/C-document/image/stack-frame.png)
 - **Tham số hàm (Passed Arguments):** Đây là các giá trị hoặc tham chiếu được truyền cho hàm khi nó được gọi từ hàm khác. Chúng được đẩy lên stack (hoặc truyền qua các thanh ghi) trước khi hàm được gọi thực thi.
 - **Địa chỉ trả về (Return Address / Saved Link Register - LR):** Đây là địa chỉ của lệnh mà chương trình sẽ tiếp tục thực thi trong hàm gọi sau khi hàm hiện tại kết thúc. Trên các kiến trúc như ARM, địa chỉ này thường được lưu trữ trong thanh ghi lr (Link Register) và được đẩy vào stack như một phần của Stack Frame.
 - **Biến cục bộ (Local Variables):** Các biến được khai báo bên trong phạm vi của hàm hiện tại sẽ được cấp phát không gian trên Stack Frame này. Chúng chỉ tồn tại trong suốt thời gian hàm đang thực thi.
@@ -191,7 +191,7 @@ Quá trình tạo và hủy Stack Frame diễn ra tự động và liên tục t
 
 **Đệ quy:** Mỗi lời gọi đệ quy tạo ra một khung stack mới riêng biệt trên stack. Điều này cho phép mỗi phiên bản của hàm đệ quy có các biến cục bộ và tham số riêng, đảm bảo tính độc lập của các lời gọi. Tuy nhiên, đây cũng là nguyên nhân chính gây ra lỗi stack overflow nếu độ sâu đệ quy quá lớn, vì mỗi khung stack tiêu thụ một lượng bộ nhớ hữu hạn trên stack.
 
-![dequy](../image/dequy2.png)
+![dequy](https://toanonestar.github.io/C-document/image/dequy2.png)
 
 Mặc dù Stack Frame cung cấp một cơ chế quản lý lời gọi hàm mạnh mẽ và tự động, nhưng sự phụ thuộc của nó vào không gian bộ nhớ giới hạn của stack là một điểm yếu cố hữu. Stack có một lượng không gian địa chỉ hạn chế, thường được xác định khi bắt đầu chương trình. Việc cấp phát tự động các khung stack, đặc biệt trong các trường hợp đệ quy sâu hoặc vô hạn, trực tiếp khiến con trỏ ngăn xếp vượt quá giới hạn của nó, dẫn đến lỗi Stack Overflow. Sự tiện lợi của việc quản lý tự động này đi kèm với cái giá là một giới hạn bộ nhớ cố định, thường là nhỏ. Điều này làm nổi bật một sự đánh đổi cơ bản trong thiết kế của C (và các ngôn ngữ tương tự). Mặc dù cấp phát dựa trên stack nhanh và đơn giản cho dữ liệu cục bộ, nhưng nó không phù hợp cho các cấu trúc dữ liệu lớn hoặc không giới hạn, hoặc các chuỗi lời gọi hàm sâu. Các lập trình viên phải nhận thức rõ về giới hạn này và chọn các chiến lược cấp phát bộ nhớ phù hợp (ví dụ: heap cho các mảng lớn) và thiết kế thuật toán (ví dụ: lặp thay vì đệ quy sâu) để ngăn chặn các sự cố thời gian chạy.
 
@@ -205,7 +205,7 @@ Quản lý bộ nhớ là một khía cạnh quan trọng nhưng cũng đầy th
 
 **Định nghĩa và cơ chế xảy ra:** Lỗi stack overflow xảy ra khi con trỏ ngăn xếp cuộc gọi (call stack pointer) vượt quá giới hạn bộ nhớ được cấp phát cho stack. Stack là một vùng bộ nhớ có kích thước hữu hạn, thường được xác định khi chương trình bắt đầu. Khi một chương trình cố gắng sử dụng nhiều không gian hơn mức có sẵn trên stack (ví dụ, bằng cách đẩy quá nhiều khung stack hoặc cấp phát các biến cục bộ quá lớn), stack được cho là bị tràn. Điều này thường dẫn đến chương trình bị sập (crash), mà biểu hiện phổ biến nhất là lỗi phân đoạn (segmentation fault).
 
-![stack-over-flow](../image/stack-over-flow.png)
+![stack-over-flow](https://toanonestar.github.io/C-document/image/stack-over-flow.png)
 
 Các nguyên nhân phổ biến:
 1. **Đệ quy vô hạn (Infinite recursion):** Đây là nguyên nhân phổ biến nhất của lỗi stack overflow. Nó xảy ra khi một hàm tự gọi nó liên tục mà không có điều kiện dừng rõ ràng. Mỗi lần gọi hàm tạo ra một khung stack mới để lưu trữ các biến cục bộ và địa chỉ trả về. Khi không có điểm dừng, quá trình này tiếp tục vô thời hạn, dẫn đến việc tạo ra vô số stack frame cho đến khi toàn bộ không gian stack cạn kiệt. 
@@ -247,7 +247,7 @@ int main() {
 }
 ```
 
-![oom](../image/oom.png)
+![oom](https://toanonestar.github.io/C-document/image/oom.png)
 
 **Các nguyên nhân:**
 
@@ -270,7 +270,7 @@ NULL từ malloc hay ngoại lệ std::bad_alloc từ new, mà thay vào đó s�
 
 **Định nghĩa và tác hại:** Memory leak (rò rỉ bộ nhớ) trong lập trình C xảy ra khi một chương trình cấp phát bộ nhớ động nhưng không giải phóng nó trở lại hệ thống khi không còn cần thiết. Điều này dẫn đến việc bộ nhớ vẫn bị chiếm dụng một cách không cần thiết, làm giảm hiệu quả sử dụng bộ nhớ và có thể khiến hệ thống cạn kiệt bộ nhớ theo thời gian. Tác hại của memory leak rất đáng kể: nó dẫn đến cạn kiệt tài nguyên hệ thống, giảm hiệu suất chương trình (chương trình trở nên chậm hơn và kém phản hồi), mất ổn định hệ thống hoặc thậm chí treo máy trong những trường hợp nghiêm trọng. Việc xác định nguồn gốc của memory leak cũng rất khó khăn vì chúng thường không biểu hiện ngay lập tức.
 
-![memory-leak](../image/memory-leak.png)
+![memory-leak](https://toanonestar.github.io/C-document/image/memory-leak.png)
 
 **Các nguyên nhân phổ biến:**
 1. **Quên giải phóng bộ nhớ được cấp phát động:** Đây là nguyên nhân phổ biến nhất. Nếu bộ nhớ được cấp phát bằng ```malloc()```, ```calloc()```, hoặc ```realloc()``` không được giải phóng bằng ```free()``` khi không còn cần thiết, bộ nhớ đó sẽ bị rò rỉ.
