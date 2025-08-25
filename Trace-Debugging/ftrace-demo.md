@@ -608,7 +608,7 @@ sys_execve() { ... }         +86.000 us
 
 Rồi chuẩn luôn 🚀. Với hướng 2 mình sẽ bật **scheduler events** (`sched_switch`, `sched_wakeup`) để thấy rõ khi thread trong module chạy, sleep, hoặc bị wakeup.
 
-### Reset và ghi lại trace với sched events
+### 3.2.1. Reset và ghi lại trace với sched events
 
 Chạy trên Pi:
 
@@ -641,7 +641,7 @@ Kết quả:
 ![ftrace-5](https://toanonestar.github.io/C-document/image/ftrace-5.png)
 
 
-### Phân tích kết quả
+### 3.2.2. Phân tích kết quả
 
 * Hai kthread của module đã chạy và **có mặt trong sched\_switch**:
 
