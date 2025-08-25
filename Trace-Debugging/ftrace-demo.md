@@ -199,7 +199,7 @@ Tạo file `gpio-ftrace-demo.c`:
 #include <linux/delay.h>
 #include <linux/atomic.h>
 #include <linux/wait.h>
-#include <linux/gpio.h>        // Legacy GPIO API; may be removed on very new kernels
+#include <linux/gpio.h>
 #include <linux/uaccess.h>
 
 MODULE_LICENSE("GPL");
@@ -245,50 +245,85 @@ static struct task_struct *contender_task;
 static struct mutex demo_lock;
 static bool stop_flag;
 
-static inline void demo_trace(const char *fmt, ...)
-{
-    // Use trace_printk (goes into trace_pipe/trace), lighter than printk.
-    // NOTE: trace_printk is costly if spammed too much.
+#define MAX_NICE_VALUE 19
+#define MIN_NICE_VALUE -20
+
+/**
+ * @brief Write a formatted message into the ftrace buffer.
+ *
+ * This function is a lightweight wrapper around trace_printk,
+ * allowing printf-style formatted strings to be written into
+ * the ftrace tracing buffer for debugging and performance analysis.
+ *
+ * @param fmt [in]  Format string (printf-like).
+ * @param ... [in]  Variable arguments corresponding to the format string.
+ *
+ * @return void
+ */
+static inline void demo_trace(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     trace_printk(fmt, args);
     va_end(args);
 }
 
-static enum hrtimer_restart tick_fn(struct hrtimer *t)
-{
-    // Softirq context. Mark that "work" is pending and wake up consumer thread.
+/**
+ * @brief High-resolution timer callback for periodic tick events.
+ *
+ * This function is invoked when the hrtimer expires. It increments the
+ * pending counter, records a trace event, wakes up any waiting consumers,
+ * and then re-arms the timer to trigger again after the specified period.
+ *
+ * @param t [in] Pointer to the hrtimer structure associated with this callback.
+ *
+ * @return HRTIMER_RESTART to indicate that the timer should be restarted.
+ */
+static enum hrtimer_restart tick_fn(struct hrtimer *t) {
     int old = atomic_fetch_add(1, &pending);
     demo_trace("DEMO TICK: pend_before=%d period_ms=%u\n", old, period_ms);
     wake_up_interruptible(&wq);
 
-    // Rearm timer
     hrtimer_forward_now(&tick_timer, ms_to_ktime(period_ms));
     return HRTIMER_RESTART;
 }
 
-static int consumer_thread_fn(void *data)
-{
+/**
+ * @brief Kernel thread function for the demo consumer.
+ *
+ * This function represents the main loop of the consumer thread.
+ * It waits for pending events (set by the timer or contender),
+ * processes them one by one, and simulates workload by optionally
+ * toggling a GPIO pin and executing a busy-wait delay.
+ *
+ * Behavior:
+ * - Sets the thread’s scheduling nice value if configured.
+ * - Waits for events to be signaled via the wait queue.
+ * - Handles pending events by acquiring a mutex, executing
+ *   demo work, and tracing begin/end markers.
+ * - Optionally toggles GPIO state on each iteration.
+ * - Optionally inserts a busy delay (`udelay`) for load simulation.
+ * - Stops once the requested number of iterations is reached or
+ *   when the thread is asked to terminate.
+ *
+ * @param data [in] Unused thread argument (may be NULL).
+ *
+ * @return 0 Always returns 0 on thread exit.
+ */
+static int consumer_thread_fn(void *data) {
     int handled, seq = 0;
-    // Set nice value if requested
     if (nice_consumer)
-        set_user_nice(current, clamp_val(nice_consumer, -20, 19));
+        set_user_nice(current, clamp_val(nice_consumer, MIN_NICE_VALUE, MAX_NICE_VALUE));
 
     demo_trace("DEMO CONSUMER: start (nice=%d)\n", task_nice(current));
 
     while (!kthread_should_stop()) {
-        // Wait for work or stop signal
-        wait_event_interruptible(
-            wq,
-            kthread_should_stop() || atomic_read(&pending) > 0
-        );
+        wait_event_interruptible(wq, kthread_should_stop() || atomic_read(&pending) > 0);
+    
         if (kthread_should_stop())
             break;
 
-        // Fetch number of pending events and process them all
         handled = atomic_xchg(&pending, 0);
         while (handled-- > 0) {
-            // Simulate processing: hold mutex, toggle GPIO (if any), burn CPU
             mutex_lock(&demo_lock);
             demo_trace("DEMO RUN: seq=%d begin\n", ++seq);
 
@@ -316,17 +351,38 @@ static int consumer_thread_fn(void *data)
     return 0;
 }
 
-static int contender_thread_fn(void *data)
-{
+/**
+ * @brief Kernel thread function for the demo contender.
+ *
+ * This function models a "contender" task that periodically acquires
+ * the demo mutex to simulate contention with the consumer thread.
+ *
+ * Behavior:
+ * - Logs start parameters (period and hold time).
+ * - Sleeps for @p contender_period_ms between iterations
+ *   (interruptible sleep).
+ * - On each wake-up:
+ *   - Acquires the demo mutex.
+ *   - Optionally holds the mutex for @p contender_hold_us microseconds
+ *     to simulate lock contention.
+ *   - Releases the mutex.
+ *   - Emits a trace marker to indicate a contender tick.
+ * - Stops gracefully when the thread is signaled to terminate.
+ *
+ * @param data [in] Unused thread argument (may be NULL).
+ *
+ * @return 0 Always returns 0 on thread exit.
+ */
+static int contender_thread_fn(void *data) {
     demo_trace("DEMO CONTENDER: start (period_ms=%u hold_us=%u)\n",
                contender_period_ms, contender_hold_us);
     while (!kthread_should_stop()) {
-        if (msleep_interruptible(contender_period_ms))
-            break;
+        if (msleep_interruptible(contender_period_ms)) break;
+
         mutex_lock(&demo_lock);
-        // Hold mutex briefly to create contention/scheduler activity
-        if (contender_hold_us)
+        if (contender_hold_us) {
             udelay(contender_hold_us);
+        }
         mutex_unlock(&demo_lock);
         demo_trace("DEMO CONTENDER: tick\n");
     }
@@ -334,60 +390,98 @@ static int contender_thread_fn(void *data)
     return 0;
 }
 
-static int __init gpio-ftrace-demo_init(void)
-{
+/**
+ * @brief Module initialization function for rpi_ftrace_demo.
+ *
+ * This function is called when the kernel module is loaded.
+ * It sets up synchronization primitives, GPIO (optional),
+ * worker threads (consumer and contender), and starts the
+ * periodic high-resolution timer.
+ *
+ * Steps performed:
+ * - Initializes wait queue and mutex.
+ * - Requests and configures GPIO pin (if @p gpio >= 0).
+ * - Creates the consumer kernel thread (@ref consumer_thread_fn).
+ * - Creates the contender kernel thread (@ref contender_thread_fn).
+ * - Initializes and starts the high-resolution timer (@ref tick_fn).
+ * - Logs success/failure messages to the kernel log buffer.
+ *
+ * Error handling:
+ * - If GPIO request fails, initialization is aborted.
+ * - If creating consumer or contender thread fails, previously
+ *   allocated resources (threads, GPIO) are cleaned up.
+ *
+ * @param void No arguments.
+ *
+ * @return 0 on success,
+ *         negative error code on failure (e.g., thread creation or GPIO request failure).
+ */
+static int __init rpi_ftrace_demo_init(void) {
     int ret;
 
-    pr_info("gpio-ftrace-demo: load (period=%ums, busy=%uus, iter=%d, gpio=%d)\n",
+    pr_info("rpi_ftrace_demo: load (period=%ums, busy=%uus, iter=%d, gpio=%d)\n",
             period_ms, busy_us, iterations, gpio);
 
     init_waitqueue_head(&wq);
     mutex_init(&demo_lock);
 
-    // Optional GPIO
     if (gpio >= 0) {
-        ret = gpio_request(gpio, "gpio-ftrace-demo");
+        ret = gpio_request(gpio, "rpi_ftrace_demo");
         if (ret) {
-            pr_err("gpio-ftrace-demo: gpio_request(%d) failed=%d\n", gpio, ret);
+            pr_err("rpi_ftrace_demo: gpio_request(%d) failed=%d\n", gpio, ret);
             return ret;
         }
         gpio_direction_output(gpio, 0);
     }
 
-    // Consumer kthread
     consumer_task = kthread_run(consumer_thread_fn, NULL, "demo_consumer");
     if (IS_ERR(consumer_task)) {
         ret = PTR_ERR(consumer_task);
         consumer_task = NULL;
-        pr_err("gpio-ftrace-demo: failed to create consumer kthread, err=%d\n", ret);
+        pr_err("rpi_ftrace_demo: failed to create consumer kthread, err=%d\n", ret);
         if (gpio >= 0) gpio_free(gpio);
         return ret;
     }
 
-    // Contender kthread (creates mutex contention + scheduler activity)
     contender_task = kthread_run(contender_thread_fn, NULL, "demo_contender");
     if (IS_ERR(contender_task)) {
         ret = PTR_ERR(contender_task);
         contender_task = NULL;
-        pr_err("gpio-ftrace-demo: failed to create contender kthread, err=%d\n", ret);
+        pr_err("rpi_ftrace_demo: failed to create contender kthread, err=%d\n", ret);
         kthread_stop(consumer_task);
         consumer_task = NULL;
         if (gpio >= 0) gpio_free(gpio);
         return ret;
     }
 
-    // Periodic hrtimer
     hrtimer_init(&tick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
     tick_timer.function = tick_fn;
     hrtimer_start(&tick_timer, ms_to_ktime(period_ms), HRTIMER_MODE_REL);
 
-    pr_info("gpio-ftrace-demo: started.\n");
+    pr_info("rpi_ftrace_demo: started.\n");
     return 0;
 }
 
-static void __exit gpio-ftrace-demo_exit(void)
-{
-    pr_info("gpio-ftrace-demo: unload\n");
+/**
+ * @brief Module cleanup function for rpi_ftrace_demo.
+ *
+ * This function is called when the kernel module is unloaded.
+ * It stops active timers and threads, releases allocated GPIO,
+ * and ensures all resources are properly cleaned up.
+ *
+ * Steps performed:
+ * - Sets @p stop_flag to notify worker threads to exit.
+ * - Cancels the high-resolution timer (@ref tick_timer).
+ * - Wakes and stops the consumer thread (if running).
+ * - Stops the contender thread (if running).
+ * - Resets and frees the GPIO pin (if allocated).
+ *
+ * @param void No arguments.
+ *
+ * @return void
+ */
+static void __exit rpi_ftrace_demo_exit(void) {
+    pr_info("rpi_ftrace_demo: unload\n");
 
     stop_flag = true;
 
@@ -406,8 +500,8 @@ static void __exit gpio-ftrace-demo_exit(void)
     }
 }
 
-module_init(gpio-ftrace-demo_init);
-module_exit(gpio-ftrace-demo_exit);
+module_init(rpi_ftrace_demo_init);
+module_exit(rpi_ftrace_demo_exit);
 ```
 Tạo `Makefile`:
 ```bash
